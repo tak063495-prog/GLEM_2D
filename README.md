@@ -1,51 +1,86 @@
-# GLEM（Generalized Limit Equilibrium Method）
+# GLEM (Generalized Limit Equilibrium Method)
 
-地盤工学における斜面安定解析・沈下予測を行う Windows デスクトップアプリケーション（C# / .NET 8 + WPF）。
+[![CI](https://github.com/tak063495-prog/GLEM_2D/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tak063495-prog/GLEM_2D/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/tak063495-prog/GLEM_2D?display_name=tag)](https://github.com/tak063495-prog/GLEM_2D/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## ドキュメント
+GLEM is a Windows desktop application for geotechnical slope stability and settlement analysis. It is built with C#/.NET 8 and WPF, and performs calculations locally without a server or external service.
 
-| 文書 | 内容 |
-|---|---|
-| [docs/GLEM_機能仕様書.md](docs/GLEM_機能仕様書.md) | 要求事項（F-01〜F-06, V-*, A-*, T-*） |
-| [docs/GLEM_基本設計書.md](docs/GLEM_基本設計書.md) | システム全体方針・機能分解・品質方針 |
-| [docs/GLEM_詳細設計書.md](docs/GLEM_詳細設計書.md) | クラス・アルゴリズム・UI 詳細 |
-| [docs/GLEM_テスト計画書.md](docs/GLEM_テスト計画書.md) | テストレベル・不具合管理・CI |
-| [docs/GLEM_ユーザーマニュアル.md](docs/GLEM_ユーザーマニュアル.md) | ユーザー向け操作手順・FAQ |
-| [docs/GLEM_実装計画書.md](docs/GLEM_実装計画書.md) | マイルストーン M0〜M4・WBS・リスク |
+日本語版: [README.ja.md](README.ja.md)
 
-## ソリューション構成
+## Features
 
-```
-GLEM.sln
-├── src/GLEM.App/     WPF アプリケーション（net8.0-windows）
-├── src/GLEM.Core/    ドメインモデル＋解析エンジン（net8.0、UI 非依存）
-└── tests/GLEM.Tests/ xUnit テスト
-```
+- Slope stability analysis using the Fellenius, simplified Bishop, and generalized Janbu methods
+- Circular slip-surface search with configurable center, radius, and slice width
+- Non-circular Janbu surfaces defined by editable control points
+- Pore-water pressure from ru or a groundwater table, plus surcharge and pseudo-static seismic coefficients
+- One-dimensional settlement/consolidation prediction with immediate, primary, and secondary components
+- `.glem` JSON project files with version checks and autosave recovery
+- CSV export and self-contained HTML reports with embedded plots
+- Input validation, progress reporting, cancellation, and WPF result plots
 
-## 開発環境の前提
+## Requirements
 
-- .NET SDK 8.0.x が PATH に存在すること
-- カスタムディレクトリにインストールした場合（例: `%LOCALAPPDATA%\Microsoft\dotnet`）、**`DOTNET_ROOT` 環境変数**をそのディレクトリに設定する（apphost が hostfxr.dll を解決するために必要）
+- Windows 10 or 11, 64-bit
+- .NET SDK 8.0.x for development
+- The self-contained release package does not require a pre-installed .NET runtime
 
-## ビルド・テスト
+## Download and run
+
+Download the latest `GLEM-<version>-win-x64.zip` from [Releases](https://github.com/tak063495-prog/GLEM_2D/releases), extract it, and run `GLEM.exe`.
+
+GLEM is intended for engineering analysis and verification. Results depend on the input data and model assumptions; they must be reviewed by a qualified engineer before being used for design or safety-critical decisions.
+
+## Build and test
 
 ```powershell
-dotnet build GLEM.sln -c Release
+dotnet restore GLEM.sln
+dotnet build GLEM.sln -c Release --no-restore
+dotnet test tests/GLEM.Tests/GLEM.Tests.csproj -c Release --no-build
+```
+
+To collect coverage and run the project gate:
+
+```powershell
 dotnet test tests/GLEM.Tests/GLEM.Tests.csproj -c Release --collect:"XPlat Code Coverage"
-# カバレッジゲート（GLEM.Core >= 80%、テスト計画書 §5.2）
 $xml = Get-ChildItem -Recurse -Include *.cobertura.xml | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 powershell -NoProfile -File scripts/coverage-gate.ps1 -CoverageXmlPath $xml.FullName
 ```
 
-## 配布物の生成
+## Create a release package locally
 
-自己完結型の Windows x64 配布物は次のコマンドで生成できます。`dist/` は実行ファイルが大きいため GitHub のソース管理対象外です。
+Run the packaging script from the repository root. The output is written to the ignored `artifacts/release/` directory.
 
 ```powershell
-dotnet publish src/GLEM.App/GLEM.App.csproj -c Release -r win-x64 --self-contained true `
-  -p:PublishSingleFile=true -o dist/GLEM-1.0.0-win-x64
+pwsh -NoProfile -File scripts/package-release.ps1 -Version 1.0.0
 ```
 
-## CI
+The same packaging step runs automatically when a tag such as `v1.0.0` is pushed. The release workflow creates a GitHub Release and uploads the zip package.
 
-`.github/workflows/ci.yml`：build → test（カバレッジ収集）→ カバレッジゲート（GLEM.Core ≥80%）。
+## Architecture
+
+```text
+GLEM.sln
+├── src/GLEM.App/      WPF desktop application (net8.0-windows)
+├── src/GLEM.Core/     UI-independent domain models and calculation engines (net8.0)
+└── tests/GLEM.Tests/  xUnit tests
+```
+
+## Documentation
+
+- [Functional specification](docs/GLEM_機能仕様書.md)
+- [Basic design](docs/GLEM_基本設計書.md)
+- [Detailed design](docs/GLEM_詳細設計書.md)
+- [Test plan](docs/GLEM_テスト計画書.md)
+- [User manual](docs/GLEM_ユーザーマニュアル.md)
+- [Release notes](RELEASE-NOTES.md)
+- [Performance records](docs/perf/README.md)
+
+## Contributing and security
+
+- See [CONTRIBUTING.md](CONTRIBUTING.md) for development and pull request guidance.
+- See [SECURITY.md](SECURITY.md) for private vulnerability reporting guidance.
+
+## License
+
+GLEM is released under the [MIT License](LICENSE).
