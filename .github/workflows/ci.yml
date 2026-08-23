@@ -1,0 +1,37 @@
+name: GLEM-CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+
+jobs:
+  build-test-coverage:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore GLEM.sln
+
+      - name: Build
+        run: dotnet build GLEM.sln -c Release --no-restore
+
+      - name: Test (with coverage)
+        run: >
+          dotnet test tests/GLEM.Tests/GLEM.Tests.csproj -c Release --no-build
+          --collect:"XPlat Code Coverage"
+
+      - name: Coverage gate (GLEM.Core >= 80%)
+        shell: pwsh
+        run: |
+          $xml = Get-ChildItem -Path . -Recurse -Include *.cobertura.xml,*.coveragexml -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $xml) { throw "coverage file not found" }
+          & powershell -NoProfile -File scripts/coverage-gate.ps1 -CoverageXmlPath $xml.FullName

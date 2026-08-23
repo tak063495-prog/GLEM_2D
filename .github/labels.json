@@ -1,0 +1,7 @@
+[
+  { "name": "bug", "color": "d73a4a", "description": "不具合" },
+  { "name": "severity/S1", "color": "b60205", "description": "致命：起動不能・クラッシュ・データ喪失の可能性（テスト計画書 §6.1）" },
+  { "name": "severity/S2", "color": "eb5a46", "description": "重大：計算結果が許容範囲外、主要機能不使用可（テスト計画書 §6.1）" },
+  { "name": "severity/S3", "color": "f9d0c4", "description": "普通：代替手段がある機能不全・表示不備（テスト計画書 §6.1）" },
+  { "name": "severity/S4", "color": "fef2c0", "description": "軽微：見た目・文言の不統一（テスト計画書 §6.1）" }
+]

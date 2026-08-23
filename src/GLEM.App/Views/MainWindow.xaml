@@ -1,0 +1,69 @@
+﻿<Window x:Class="GLEM.App.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:GLEM.App.Converters"
+        xmlns:views="clr-namespace:GLEM.App.Views"
+        Title="GLEM" Height="720" Width="1080"
+        Closing="Window_Closing">
+    <Window.Resources>
+        <conv:ScreenMatchConverter x:Key="ScreenMatch"/>
+    </Window.Resources>
+    <DockPanel>
+        <!-- Menu bar -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New" Command="{Binding NewProjectCommand}"/>
+                <Separator/>
+                <MenuItem Header="_Open..." Command="{Binding RequestOpenCommand}"/>
+                <MenuItem Header="_Save" Command="{Binding SaveCommand}"/>
+                <MenuItem Header="Save _As..." Command="{Binding RequestSaveAsCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About GLEM" Click="About_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Status bar -->
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusText}"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Navigation (S-1) -->
+            <StackPanel Grid.Column="0" Margin="8">
+                <TextBlock Text="GLEM" FontSize="20" FontWeight="Bold" Margin="4,4,4,12"/>
+                <Button Content="Ground Model (S-2)" Height="34" Margin="0,2" Padding="6"
+                        Command="{Binding NavigateCommand}" CommandParameter="GroundModel"/>
+                <Button Content="Slope - Settings (S-3)" Height="34" Margin="0,2" Padding="6"
+                        Command="{Binding NavigateCommand}" CommandParameter="SlopeSettings"/>
+                <Button Content="Slope - Results (S-4)" Height="34" Margin="0,2" Padding="6"
+                        Command="{Binding NavigateCommand}" CommandParameter="SlopeResult"/>
+                <Separator Margin="0,8"/>
+                <Button Content="Settlement - Settings (S-5)" Height="34" Margin="0,2" Padding="6"
+                        Command="{Binding NavigateCommand}" CommandParameter="SettlementSettings"/>
+                <Button Content="Settlement - Results (S-6)" Height="34" Margin="0,2" Padding="6"
+                        Command="{Binding NavigateCommand}" CommandParameter="SettlementResult"/>
+                <Separator Margin="0,8"/>
+                <TextBlock Text="{Binding Project.ProjectName}" Margin="4,8,4,0" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding CurrentFilePath, TargetNullValue='(unsaved)'}"
+                           FontSize="11" Foreground="Gray" TextWrapping="Wrap" Margin="4,2,4,0"/>
+            </StackPanel>
+
+            <!-- Screen content (S-2 to S-6) -->
+            <Grid Grid.Column="1">
+                <views:GroundModelEditorView DataContext="{Binding GroundModelEditor}" Visibility="{Binding DataContext.ActiveScreen, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource ScreenMatch}, ConverterParameter=GroundModel}"/>
+                <views:SlopeAnalysisSettingsView DataContext="{Binding SlopeAnalysis}" Visibility="{Binding DataContext.ActiveScreen, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource ScreenMatch}, ConverterParameter=SlopeSettings}"/>
+                <views:SlopeResultView DataContext="{Binding SlopeAnalysis}" Visibility="{Binding DataContext.ActiveScreen, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource ScreenMatch}, ConverterParameter=SlopeResult}"/>
+                <views:SettlementSettingsView DataContext="{Binding Settlement}" Visibility="{Binding DataContext.ActiveScreen, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource ScreenMatch}, ConverterParameter=SettlementSettings}"/>
+                <views:SettlementResultView DataContext="{Binding Settlement}" Visibility="{Binding DataContext.ActiveScreen, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource ScreenMatch}, ConverterParameter=SettlementResult}"/>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>

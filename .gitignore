@@ -1,0 +1,24 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+coverage*.xml
+*.coveragexml
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+publish/
+dist/
+
+## Local verification artifacts
+capture-*.txt
+
+## OS
+Thumbs.db
+Desktop.ini
+.DS_Store
