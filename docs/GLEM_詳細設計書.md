@@ -44,7 +44,7 @@
 | D-01 | UI（`GLEM.App`）と計算（`GLEM.Core`）を別プロジェクトに分離 | 機能仕様書 §7「解析エンジンをUIから分離したモジュール構成」の要求。計算カーネルの単体テスト容易性（カバレッジ80%以上） |
 | D-02 | `.glem` は JSON テキスト形式 | 機能仕様書 §3.2 の規定。人間可読・diff 可能・System.Text.Json でネイティブ対応 |
 | D-03 | 多層地盤の圧密時間変化は「層別 U(t) の重ね合わせ」近似を採用 | 各層が同一載荷 Δσ を受け、独立に圧密するとして S(t)=S_imm+Σ S_j・U_j(t)+S_sec とする。簡易設計法として実務で広く用いられる手法であり、機能仕様書 §5.2 の式と整合 |
-| D-04 | Janbu 法の補正係数 λc は公開の閉形式補正式（条体底面角の加重平均偏差）で算出 | 円弧では1.0、非円は `λc = 1 + Σ(Wi·sinαi·|αi−ᾱ|)/Σ(Wi·sinαi)`（Janbu 1964 の補正を Das「Advanced Soil Mechanics」の表現で実装、上限2.0）。テーブル補間より離散誤差がなく、T-03d/T-03e で公開式に基づく参照値2件と照合して検証する（機能仕様書 §4.7 A-1） |
+| D-04 | ヤンブ型GLEM近似の補正係数 λc は条体底面角の加重平均偏差で算出 | 円弧では1.0、非円は `d_i=max(0,Wi·sinαi)`、`λc=min(2.0, 1+Σ(d_i·|αi−ᾱ|)/Σd_i)`。公開Janbu補正の概念を参考にしたプロジェクト固有のヒューリスティックで、完全なJanbu一般化法ではない。T-03と `ReferenceCaseTests` で実装式の固定値を回帰する |
 | D-05 | プロットは ScottPlot を採用 | WPF ネイティブ描画で WebView 依存がなく、断面図・時系列グラフの両方に適用可能 |
 | D-06 | 解析計算はバックグラウンド `Task` で実行し `IProgress<T>` で進捗報告 | UI フリーズ防止（機能仕様書 §7 性能・使いやすさ要求） |
 
@@ -441,13 +441,13 @@ double ComputeFs(IReadOnlyList<SliceGeometry> slices, GroundModel gm):
 // SliceResult への CTerm/PhiTerm は mAlpha 除算後の各項を格納する（§6.3 CSV と一致）
 ```
 
-### 4.5 Janbu一般化条体法エンジン（非円滑動面）
+### 4.5 ヤンブ型GLEM近似エンジン（非円滑動面）
 
 ```csharp
-// 滑動面は制御点列を通る三次スプライン y = f(x) で定義（FunctionSurface.ControlPoints）
+// 滑動面は x 順に並べた制御点を結ぶ折れ線で定義（FunctionSurface.ControlPoints）
 List<SliceGeometry> DiscretizeFunction(FunctionSurface fs, GroundModel gm, double sliceWidth):
-    // x をモデル範囲内で sliceWidth 等間隔に分割し、f'(x) から α_i = atan(f'(xMid)) を算出
-    ...（円弧版と同様の条体高さ・重量の算出）
+    // 各線分を長さ / sliceWidth で分割し、α_i = atan2(Δz, Δx) を算出
+    // 地表 z=0 と折れ線の間を条体高さとして重量を算出
 
 double ComputeFs(IReadOnlyList<SliceGeometry> slices, GroundModel gm):
     lambdaC = ComputeLambdaC(slices)                    // §4.5-2
@@ -459,15 +459,16 @@ double ComputeFs(IReadOnlyList<SliceGeometry> slices, GroundModel gm):
         driving   += s.WKnPerM * sin(s.AlphaRad)
     return resisting / (lambdaC * driving)              // 機能仕様書 §4.3 の式
 
-// λc: Janbu補正係数。条体間力を底面に平行と仮定した際の誤差を補正する（D-04）
+// λc: 公開Janbu補正の概念を参考にしたGLEM固有の近似係数（D-04）
 double ComputeLambdaC(IReadOnlyList<SliceGeometry> slices):
     if AllSlicesOnSingleCircle(slices): return 1.0      // 円弧では定義上 1.0
-    // 事前計算テーブル（キー: 滑動面形状パラメータ = 底面傾きの分散と平均の組）を線形補間
-    key = (mean(|alpha_i|), stddev(alpha_i))
-    return Interpolate(LAMBDA_C_TABLE, key)             // テーブル値は [1.0, 2.0]
+    d_i = max(0.0, W_i * sin(alpha_i))
+    if sum(d_i) <= 0: return 1.0
+    alpha_bar = sum(d_i * alpha_i) / sum(d_i)
+    return min(2.0, 1.0 + sum(d_i * abs(alpha_i - alpha_bar)) / sum(d_i))
 ```
 
-`LAMBDA_C_TABLE` は実装時に Janbu の公開例（T-03 参照）で検証済みの値を埋め込みデータとして同梱する。
+本実装はスライス間力関数を独立に解かず、完全なJanbu一般化法を再現しない。画面とHTMLレポートに近似警告を表示し、式・仮定・適用範囲・制限は `docs/METHODS.ja.md` を正とする。
 
 ### 4.6 臨界滑動面探索（SlipSurfaceSearcher）
 
@@ -636,7 +637,7 @@ double ConsolidationRatio(GroundModel gm, SoilLayer L, SettlementAnalysisInput i
 +------------------------------------------------------------------+
 | 斜面安定解析                                                      |
 +------------------------------------------------------------------+
-| 解析手法: (○) Bishop簡化法  ( ) Fellenius法  ( ) Janbu一般化条体法 |
+| 解析手法: (○) Bishop簡化法  ( ) Fellenius法  ( ) ヤンブ型GLEM近似  |
 |   [Janbu選択時] 滑動面制御点エディタを表示（x,z の点列追加/削除）  |
 | 条体幅 [m]: (1.0)    収束許差: (0.001)   最大反復: (200)          |
 | 載荷荷重 q [kPa]: (0)  範囲 x: (__)〜(__) m（q>0 で有効）         |
@@ -783,7 +784,7 @@ public sealed class ProjectFileException : GlemException                        
 |---|---|---|
 | T-01 | `SlopeStabilityTests.T01_Fellenius_MatchesHandCalculation` | 手算値（Fellenius 1927 の式への直接代入、FS≈1.811）と ±0.001 で照合。出典はテストファイルヘッダに明記 |
 | T-02 | `SlopeStabilityTests.T02_Bishop_ConvergesAndSatisfiesFixedPoint` | 反復収束（≤500回、A-2）かつ FS が固定点方程式を ±2e-8 で満たすことを検証 |
-| T-03 | `SlopeStabilityTests.T03a〜T03e` | 円弧で λc=1.0・Fellenius と等価（T03a）、非円で補正適用（T03b）、平坦面で 1.0（T03c）。T03d/T03e は Janbu(1964) の公開補正式に基づく手算参照値2件（λc≈1.176/FS≈1.50、λc≈1.249/FS≈1.137）と照合（D-04, A-1） |
+| T-03 | `SlopeStabilityTests.T03a〜T03e`、`ReferenceCaseTests.JanbuApproximation_FourSliceHandCase_RemainsAtLockedBaseline` | 円弧で λc=1.0・Fellenius と等価（T03a）、非円で補正適用（T03b）、平坦面で1.0（T03c）、GLEM固有式の独立計算固定値（λc≈1.176、FS≈1.500等）と照合。完全なJanbu一般化法の文献値との一致を主張しない（D-04） |
 | T-04 | `SlopeStabilityTests.T04_PoreWaterPressure_DecreasesSafetyFactor` | 地下水位 8m→2m で FS が低下すること（A-3） |
 | T-05 | `SlopeStabilityTests.T05_SeismicCoefficient_DecreasesSafetyFactor` | kh=0 → 0.1 で FS が単調低下 |
 | T-06 | `SettlementTests.T06a/b/c` | Tv=0.197 で U≈50%（±1%, A-5）。厳密級数解との誤差 ≤2%、分岐境界（Tv=0.2）の連続性も確認 |

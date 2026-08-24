@@ -5,6 +5,9 @@ on:
     branches: [ master, main ]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   build-test-coverage:
     runs-on: windows-latest
@@ -24,6 +27,9 @@ jobs:
         run: dotnet build GLEM.sln -c Release --no-restore
 
       - name: Test (with coverage)
+        env:
+          GLEM_RECORD_PERF: '1'
+          GLEM_PERF_OUTPUT: '${{ runner.temp }}\glem-perf\perf-log.jsonl'
         run: >
           dotnet test tests/GLEM.Tests/GLEM.Tests.csproj -c Release --no-build
           --collect:"XPlat Code Coverage"
@@ -35,3 +41,12 @@ jobs:
                 Sort-Object LastWriteTime -Descending | Select-Object -First 1
           if (-not $xml) { throw "coverage file not found" }
           & powershell -NoProfile -File scripts/coverage-gate.ps1 -CoverageXmlPath $xml.FullName
+
+      - name: Upload performance record
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: glem-performance-${{ github.run_id }}
+          path: '${{ runner.temp }}\glem-perf\perf-log.jsonl'
+          if-no-files-found: warn
+          retention-days: 30

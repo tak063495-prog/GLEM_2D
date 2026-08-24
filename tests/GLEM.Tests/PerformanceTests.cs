@@ -13,6 +13,8 @@ public sealed class PerformanceTests
 {
     private const double SearchBudgetSeconds = 60.0;
     private const double SettlementBudgetSeconds = 30.0;
+    private const string RecordPerfVariable = "GLEM_RECORD_PERF";
+    private const string PerfOutputVariable = "GLEM_PERF_OUTPUT";
 
     [Fact]
     public void StandardModel_WithinTimeBudget()
@@ -87,11 +89,51 @@ public sealed class PerformanceTests
         OutputPointCount = 50
     };
 
-    // Time-series record with environment info (test plan §5.3) → docs/perf/perf-log.jsonl
+    [Fact]
+    public void PerformanceMeasurement_IsOptInAndWritesOnlyToConfiguredArtifactPath()
+    {
+        var originalRecord = Environment.GetEnvironmentVariable(RecordPerfVariable);
+        var originalOutput = Environment.GetEnvironmentVariable(PerfOutputVariable);
+        var dir = Path.Combine(Path.GetTempPath(), $"glem-perf-test-{Guid.NewGuid():N}");
+        var output = Path.Combine(dir, "perf-log.jsonl");
+
+        try
+        {
+            Environment.SetEnvironmentVariable(PerfOutputVariable, output);
+            Environment.SetEnvironmentVariable(RecordPerfVariable, null);
+            RecordMeasurement(1.0, 2.0, 1.25, 10.0);
+            Assert.False(File.Exists(output));
+
+            Environment.SetEnvironmentVariable(RecordPerfVariable, "1");
+            RecordMeasurement(1.0, 2.0, 1.25, 10.0);
+            Assert.True(File.Exists(output));
+
+            var line = File.ReadAllLines(output).Single();
+            using var json = System.Text.Json.JsonDocument.Parse(line);
+            Assert.Equal(1.25, json.RootElement.GetProperty("SlopeFs").GetDouble());
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(RecordPerfVariable, originalRecord);
+            Environment.SetEnvironmentVariable(PerfOutputVariable, originalOutput);
+            if (Directory.Exists(dir))
+            {
+                Directory.Delete(dir, recursive: true);
+            }
+        }
+    }
+
+    // Performance records are opt-in. Normal test runs never modify tracked docs/perf files.
+    // CI can set GLEM_RECORD_PERF=1 and GLEM_PERF_OUTPUT to an artifact path.
     private static void RecordMeasurement(double searchSeconds, double settlementSeconds, double fs, double totalMm)
     {
+        if (!string.Equals(Environment.GetEnvironmentVariable(RecordPerfVariable), "1", StringComparison.Ordinal))
+        {
+            return;
+        }
+
         var entry = new PerfEntry(
-            DateTime.Now.ToString("o"),
+            DateTime.UtcNow.ToString("o"),
             Environment.MachineName,
             RuntimeInformation.OSDescription,
             Environment.ProcessorCount,
@@ -104,32 +146,22 @@ public sealed class PerformanceTests
 
         try
         {
-            var dir = Path.Combine(FindSolutionRoot(), "docs", "perf");
-            Directory.CreateDirectory(dir);
+            var output = Environment.GetEnvironmentVariable(PerfOutputVariable);
+            if (string.IsNullOrWhiteSpace(output))
+            {
+                output = Path.Combine(Path.GetTempPath(), "GLEM", "perf", "perf-log.jsonl");
+            }
+
+            output = Path.GetFullPath(output);
+            Directory.CreateDirectory(Path.GetDirectoryName(output)!);
             File.AppendAllText(
-                Path.Combine(dir, "perf-log.jsonl"),
+                output,
                 System.Text.Json.JsonSerializer.Serialize(entry) + "\n");
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // Recording must never fail the performance test itself
         }
-    }
-
-    private static string FindSolutionRoot()
-    {
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null)
-        {
-            if (File.Exists(Path.Combine(dir.FullName, "GLEM.sln")))
-            {
-                return dir.FullName;
-            }
-
-            dir = dir.Parent;
-        }
-
-        throw new DirectoryNotFoundException("GLEM.sln not found above the test output directory");
     }
 
     private sealed record PerfEntry(

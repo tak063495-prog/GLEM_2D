@@ -178,7 +178,7 @@
     <value>Bishop simplified</value>
   </data>
   <data name="SlopeMethod_JanbuGeneralized" xml:space="preserve">
-    <value>Janbu generalized</value>
+    <value>Janbu-style (GLEM approximation)</value>
   </data>
   <data name="Drainage_Single" xml:space="preserve">
     <value>Single drainage</value>
@@ -418,7 +418,7 @@ Version {0}</value>
     <value>Fellenius method (circular)</value>
   </data>
   <data name="SlopeSettings_Method_Janbu" xml:space="preserve">
-    <value>Janbu generalized wedge method (non-circular)</value>
+    <value>Janbu-style GLEM approximation (non-circular)</value>
   </data>
   <data name="SlopeSettings_ControlPointsGroup" xml:space="preserve">
     <value>Slip Surface Control Points (shown when Janbu is selected)</value>
@@ -615,4 +615,33 @@ Version {0}</value>
   <data name="SettlementPlot_T90AnnotationFormat" xml:space="preserve">
     <value>U=90% (T90={0:F0} d)</value>
   </data>
+  <data name="Janbu_ApproximationWarning" xml:space="preserve"><value>Caution: the generalized Janbu λc correction is a GLEM-specific approximation informed by published correction concepts. Review the method scope and known limitations before using the result.</value></data>
+  <data name="CrossSection_LegendGroundSurface" xml:space="preserve"><value>Ground surface (solid)</value></data>
+  <data name="CrossSection_LegendWaterTable" xml:space="preserve"><value>Groundwater table (dashed)</value></data>
+  <data name="CrossSection_LegendCriticalSurface" xml:space="preserve"><value>Critical slip surface (dense dashed)</value></data>
+  <data name="Accessibility_MainWindowName" xml:space="preserve"><value>GLEM geotechnical analysis</value></data>
+  <data name="Accessibility_StatusMessage" xml:space="preserve"><value>Application status</value></data>
+  <data name="Accessibility_NavGroundModel" xml:space="preserve"><value>Open ground model editor</value></data>
+  <data name="Accessibility_NavSlopeSettings" xml:space="preserve"><value>Open slope stability settings</value></data>
+  <data name="Accessibility_NavSlopeResults" xml:space="preserve"><value>Open slope stability results</value></data>
+  <data name="Accessibility_NavSettlementSettings" xml:space="preserve"><value>Open settlement settings</value></data>
+  <data name="Accessibility_NavSettlementResults" xml:space="preserve"><value>Open settlement results</value></data>
+  <data name="Accessibility_GroundLayerTable" xml:space="preserve"><value>Ground layer properties table</value></data>
+  <data name="Accessibility_ControlPointTable" xml:space="preserve"><value>Janbu slip-surface control points table</value></data>
+  <data name="Accessibility_SurchargeStart" xml:space="preserve"><value>Surcharge range start x</value></data>
+  <data name="Accessibility_SurchargeEnd" xml:space="preserve"><value>Surcharge range end x</value></data>
+  <data name="Accessibility_CxMinimum" xml:space="preserve"><value>Circle center x minimum</value></data>
+  <data name="Accessibility_CxMaximum" xml:space="preserve"><value>Circle center x maximum</value></data>
+  <data name="Accessibility_CzMinimum" xml:space="preserve"><value>Circle center z minimum</value></data>
+  <data name="Accessibility_CzMaximum" xml:space="preserve"><value>Circle center z maximum</value></data>
+  <data name="Accessibility_RadiusMinimum" xml:space="preserve"><value>Circle radius minimum</value></data>
+  <data name="Accessibility_RadiusMaximum" xml:space="preserve"><value>Circle radius maximum</value></data>
+  <data name="Accessibility_LoadedAreaWidth" xml:space="preserve"><value>Loaded area width B</value></data>
+  <data name="Accessibility_LoadedAreaLength" xml:space="preserve"><value>Loaded area length L</value></data>
+  <data name="Accessibility_CrossSectionPlot" xml:space="preserve"><value>Slope cross-section plot</value></data>
+  <data name="Accessibility_CrossSectionPlotHelp" xml:space="preserve"><value>Ground layers are labeled; groundwater is dashed and the critical slip surface is densely dashed.</value></data>
+  <data name="Accessibility_SliceResultTable" xml:space="preserve"><value>Slope slice result table</value></data>
+  <data name="Accessibility_SettlementPlot" xml:space="preserve"><value>Settlement versus time plot</value></data>
+  <data name="Accessibility_SettlementPlotHelp" xml:space="preserve"><value>Total, immediate, primary, and secondary settlement curves use different line patterns.</value></data>
+  <data name="Accessibility_SettlementResultTable" xml:space="preserve"><value>Settlement time-series result table</value></data>
 </root>

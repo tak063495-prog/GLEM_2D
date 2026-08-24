@@ -1,60 +1,73 @@
 name: GLEM-Release
-
 on:
   push:
-    tags:
-      - 'v*.*.*'
-
+    tags: ['v*.*.*']
 permissions:
   contents: write
-
 jobs:
   package-and-release:
     runs-on: windows-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Create Windows x64 package
-        shell: pwsh
-        run: pwsh -NoProfile -File scripts/package-release.ps1 -Version "${{ github.ref_name }}"
-
-      # Validate the archive contents (not only the package directory): expand each generated zip,
-      # locate GLEM.exe inside it, and run --selftest. Fail if the exe is missing or exits nonzero.
-      - name: Verify release archive (expand zip, run GLEM.exe --selftest)
-        shell: pwsh
-        run: |
-          $zips = Get-ChildItem -LiteralPath artifacts/release -Filter *.zip -File | Select-Object -ExpandProperty FullName
-          if (-not $zips) { throw "No release zip found in artifacts/release" }
-
-          foreach ($zip in $zips) {
-            $stage = Join-Path ([System.IO.Path]::GetTempPath()) ("glem-selftest-" + [guid]::NewGuid().ToString("N"))
-            New-Item -ItemType Directory -Path $stage | Out-Null
-            try {
-              Expand-Archive -LiteralPath $zip -DestinationPath $stage -Force
-
-              $exe = Get-ChildItem -LiteralPath $stage -Recurse -Filter GLEM.exe -File | Select-Object -First 1
-              if (-not $exe) { throw "GLEM.exe not found in expanded archive: $zip" }
-
-              # GLEM.exe is a GUI-subsystem executable; invoking it via "&" can leave $LASTEXITCODE null,
-              # so use Start-Process -Wait to reliably wait and read the process ExitCode.
-              $proc = Start-Process -FilePath $exe.FullName -ArgumentList "--selftest" -WindowStyle Hidden -Wait -PassThru
-              if ($proc.ExitCode -ne 0) { throw "GLEM.exe --selftest exited with code $($proc.ExitCode) (archive: $zip)" }
-            } finally {
-              Remove-Item -LiteralPath $stage -Recurse -Force
-            }
-          }
-
-      - name: Create GitHub Release and upload zip
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '8.0.x' }
+      - name: Create Windows x64 package, checksum, and SBOM
         shell: pwsh
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WINDOWS_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: pwsh -NoProfile -File scripts/package-release.ps1 -Version "${{ github.ref_name }}"
+      - name: Verify release archive
+        shell: pwsh
+        run: pwsh -NoProfile -File scripts/verify-release.ps1 -Archive (Get-ChildItem artifacts/release/*.zip | Select-Object -First 1).FullName -Version "${{ github.ref_name }}"
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+      - name: Build installer
+        shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}"
-          $assets = Get-ChildItem -LiteralPath artifacts/release -Filter *.zip | Select-Object -ExpandProperty FullName
-          gh release create $version $assets --repo "${{ github.repository }}" --title "GLEM $version" --generate-notes
+          $zip = Get-ChildItem artifacts/release/*.zip | Select-Object -First 1
+          $stage = Join-Path $env:RUNNER_TEMP 'glem-installer'
+          New-Item $stage -ItemType Directory -Force | Out-Null
+          Expand-Archive $zip.FullName $stage -Force
+          $package = Get-ChildItem $stage -Directory | Select-Object -First 1
+          Copy-Item $package.FullName installer/package -Recurse -Force
+          $version = "${{ github.ref_name }}".Trim().TrimStart('v').Split('+')[0]
+          & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' "/DMyAppVersion=$version" installer/GLEM.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed with exit code $LASTEXITCODE." }
+          Move-Item installer/Output/*.exe (Join-Path 'artifacts/release' "$($zip.BaseName)-Setup.exe") -Force
+          Remove-Item installer/package -Recurse -Force
+      - name: Report signing status
+        shell: pwsh
+        env:
+          WINDOWS_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          $cert = $env:WINDOWS_CERTIFICATE_BASE64
+          $password = $env:WINDOWS_CERTIFICATE_PASSWORD
+          if ($cert -and $password) {
+            $pfx = Join-Path $env:RUNNER_TEMP 'glem-signing.pfx'
+            [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($cert))
+            $signtool = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe' | Sort-Object FullName -Descending | Select-Object -First 1
+            if (-not $signtool) { throw 'signtool.exe was not found.' }
+            $installer = Get-ChildItem artifacts/release/*-win-x64-Setup.exe | Select-Object -First 1
+            & $signtool.FullName sign /fd SHA256 /f $pfx /p $password /tr http://timestamp.digicert.com /td SHA256 $installer.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Installer signing failed with exit code $LASTEXITCODE." }
+            & $signtool.FullName verify /pa $installer.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Installer signature verification failed with exit code $LASTEXITCODE." }
+            Write-Host 'Signed and verified installer with configured certificate.'
+            Remove-Item $pfx -Force
+          } else { Write-Warning 'No signing secrets configured; release and installer are unsigned.' }
+      - name: Create final SHA-256 checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem artifacts/release -File | Where-Object { $_.Extension -in '.zip', '.exe' } | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($_.Name)" | Set-Content "$($_.FullName).sha256" -Encoding ascii
+          }
+      - name: Create GitHub Release and upload assets
+        shell: pwsh
+        env: { GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+        run: |
+          $assets = Get-ChildItem artifacts/release -File | Select-Object -ExpandProperty FullName
+          gh release create "${{ github.ref_name }}" $assets --repo "${{ github.repository }}" --title "GLEM ${{ github.ref_name }}" --generate-notes

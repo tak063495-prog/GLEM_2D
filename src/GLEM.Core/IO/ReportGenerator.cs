@@ -32,6 +32,7 @@ public static class ReportGenerator
             th{background:#eef;text-align:center}
             td:first-child,th:first-child{text-align:left}
             .meta{color:#567;font-size:12px}
+            .warning{border:2px solid #444;padding:8px;background:#fff4ce}
             img{max-width:860px;border:1px solid #ccd;margin:8px 0}
             </style>
             """);
@@ -152,6 +153,13 @@ public static class ReportGenerator
           .Append("</b> &nbsp;|&nbsp; ").Append(t.MethodLabel).Append(" ").Append(Esc(t.SlopeMethodDisplay(r.Method)))
           .Append(" &nbsp;|&nbsp; ").Append(t.ConvergedLabel).Append(" ").Append(r.Converged ? t.YesWord : t.NoWord)
           .Append(" ").Append(string.Format(Invariant, t.IterationsFormat, r.Iterations)).Append("</p>\n");
+
+        if (r.Method == SlopeMethod.JanbuGeneralized)
+        {
+            sb.Append("<p class=\"warning\"><strong>")
+              .Append(Esc(t.JanbuApproximationWarning))
+              .AppendLine("</strong></p>");
+        }
 
         switch (r.CriticalSurface)
         {

@@ -73,6 +73,9 @@ internal sealed class ReportText
         YesWord = ja ? "はい" : "yes";
         NoWord = ja ? "いいえ" : "no";
         IterationsFormat = ja ? "（{0} 反復）" : "({0} iterations)";
+        JanbuApproximationWarning = ja
+            ? "注意：一般化ヤンブ法の λc 補正は、公開された補正概念を参考にした GLEM 固有の近似です。結果の適用範囲と既知の制限を確認してください。"
+            : "Caution: the generalized Janbu λc correction is a GLEM-specific approximation informed by published correction concepts. Review the method scope and known limitations before using the result.";
         CircleSurfaceFormat = ja
             ? "臨界滑動面（円）：R = {0} m、中心（{1}, {2}）"
             : "Critical surface (circle): R = {0} m, center ({1}, {2})";
@@ -160,6 +163,8 @@ internal sealed class ReportText
 
     public string IterationsFormat { get; }
 
+    public string JanbuApproximationWarning { get; }
+
     public string CircleSurfaceFormat { get; }
 
     public string FunctionSurfaceFormat { get; }
@@ -198,7 +203,7 @@ internal sealed class ReportText
     {
         SlopeMethod.Fellenius => "Fellenius",
         SlopeMethod.BishopSimplified => "Bishop (simplified)",
-        SlopeMethod.JanbuGeneralized => "Janbu (generalized)",
+        SlopeMethod.JanbuGeneralized => "Janbu-style (GLEM approximation)",
         _ => m.ToString()
     };
 
@@ -206,7 +211,7 @@ internal sealed class ReportText
     {
         SlopeMethod.Fellenius => "フェレンイウス法",
         SlopeMethod.BishopSimplified => "ビショップ簡易法",
-        SlopeMethod.JanbuGeneralized => "ヤンブ一般化法",
+        SlopeMethod.JanbuGeneralized => "ヤンブ型（GLEM近似）",
         _ => m.ToString()
     };
 

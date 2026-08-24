@@ -146,7 +146,7 @@ public sealed class IoTests : IDisposable
     // P0 localization regression: explicit ReportLanguage must drive the report text, and numbers/dates
     // must stay dot-decimal / fixed-format even when CurrentCulture is a non-English comma-decimal culture.
 
-    private static ReportContent SampleReportContent(ReportLanguage language) => new()
+    private static ReportContent SampleReportContent(ReportLanguage language, SlopeMethod slopeMethod = SlopeMethod.BishopSimplified) => new()
     {
         Language = language,
         AppVersion = "1.0.0",
@@ -176,7 +176,7 @@ public sealed class IoTests : IDisposable
             SlopeAnalysis = new SlopeAnalysisInput { Method = SlopeMethod.BishopSimplified, SliceWidthM = 1.0 },
             SettlementAnalysis = new SettlementAnalysisInput { LoadKpa = 100.0 }
         },
-        SlopeResult = SampleSlopeResult(),
+        SlopeResult = SampleSlopeResult() with { Method = slopeMethod },
         SettlementResult = SampleSettlementResult(),
         Figures = { new ReportFigure("Cross section", new byte[] { 0x89, 0x50, 0x4E, 0x47 }) }
     };
@@ -263,6 +263,17 @@ public sealed class IoTests : IDisposable
         html.Should().Contain("A&amp;B &lt;Test&gt;");
         html.Should().NotContain("<Test>");
         html.Should().Contain("data:image/png;base64,iVBORw=="); // base64 of { 0x89, 0x50, 0x4E, 0x47 }
+    }
+
+    [Theory]
+    [InlineData(ReportLanguage.English, "Caution: the generalized Janbu λc correction is a GLEM-specific approximation")]
+    [InlineData(ReportLanguage.Japanese, "注意：一般化ヤンブ法の λc 補正は、公開された補正概念を参考にした GLEM 固有の近似です。")]
+    public void Report_JanbuResult_AlwaysIncludesLocalizedApproximationWarning(ReportLanguage language, string expected)
+    {
+        var html = ReportGenerator.Generate(SampleReportContent(language, SlopeMethod.JanbuGeneralized));
+
+        html.Should().Contain("class=\"warning\"");
+        html.Should().Contain(expected);
     }
 
     // P0 invariant-format regression: CSV wire format must not follow a non-English comma-decimal culture.

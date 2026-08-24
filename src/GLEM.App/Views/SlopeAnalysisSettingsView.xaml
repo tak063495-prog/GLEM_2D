@@ -18,16 +18,25 @@
                 </StackPanel>
             </GroupBox>
 
+            <Border Padding="10" Margin="0,0,0,10" BorderThickness="2"
+                    BorderBrush="{DynamicResource SystemColors.HighlightBrushKey}"
+                    Background="{DynamicResource SystemColors.ControlBrushKey}"
+                    Visibility="{Binding MethodIsJanbu, Converter={StaticResource BoolToVis}}">
+                <TextBlock Text="{loc:Loc Key='Janbu_ApproximationWarning'}" TextWrapping="Wrap"
+                           FontWeight="SemiBold" AutomationProperties.LiveSetting="Polite"/>
+            </Border>
+
             <!-- Slip surface control points (Janbu non-circular, C-04) -->
             <GroupBox Header="{loc:Loc Key='SlopeSettings_ControlPointsGroup'}" Padding="8" Margin="0,0,0,10"
                       Visibility="{Binding MethodIsJanbu, Converter={StaticResource BoolToVis}}">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,6,0,0">
-                        <Button Content="{loc:Loc Key='SlopeSettings_AddPointButton'}" Width="100" Height="28" Command="{Binding AddControlPointCommand}"/>
-                        <Button Content="{loc:Loc Key='SlopeSettings_RemovePointButton'}" Width="130" Height="28" Margin="8,0,0,0" Command="{Binding RemoveSelectedControlPointCommand}"/>
-                        <TextBlock Text="{loc:Loc Key='SlopeSettings_ControlPointsHint'}" VerticalAlignment="Center" Foreground="#567" FontSize="11" Margin="6,0,0,0"/>
+                        <Button Content="{loc:Loc Key='SlopeSettings_AddPointButton'}" Width="100" Height="28" KeyboardNavigation.TabIndex="201" AutomationProperties.Name="{loc:Loc Key='SlopeSettings_AddPointButton'}" Command="{Binding AddControlPointCommand}"/>
+                        <Button Content="{loc:Loc Key='SlopeSettings_RemovePointButton'}" Width="130" Height="28" Margin="8,0,0,0" KeyboardNavigation.TabIndex="202" AutomationProperties.Name="{loc:Loc Key='SlopeSettings_RemovePointButton'}" Command="{Binding RemoveSelectedControlPointCommand}"/>
+                        <TextBlock Text="{loc:Loc Key='SlopeSettings_ControlPointsHint'}" VerticalAlignment="Center" Foreground="{DynamicResource SystemColors.GrayTextBrushKey}" FontSize="11" Margin="6,0,0,0"/>
                     </StackPanel>
                     <DataGrid ItemsSource="{Binding ControlPoints}" SelectedItem="{Binding SelectedControlPoint}"
+                              KeyboardNavigation.TabIndex="200" AutomationProperties.Name="{loc:Loc Key='Accessibility_ControlPointTable'}"
                               AutoGenerateColumns="False" CanUserAddRows="False" Height="120">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="x [m]" Binding="{Binding X, UpdateSourceTrigger=PropertyChanged}"/>
@@ -55,36 +64,39 @@
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Key='SlopeSettings_SliceWidthLabel'}" VerticalAlignment="Center"/>
                     <TextBox Grid.Row="0" Grid.Column="1" Width="120" HorizontalAlignment="Left" Margin="8,4" Height="24"
+                             KeyboardNavigation.TabIndex="210" AutomationProperties.Name="{loc:Loc Key='SlopeSettings_SliceWidthLabel'}" AutomationProperties.HelpText="{loc:Loc Key='SlopeSettings_SliceWidthTooltip'}"
                              VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SlopeSettings_SliceWidthTooltip'}"
                              Text="{Binding SliceWidthM, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Loc Key='SlopeSettings_SurchargeLabel'}" VerticalAlignment="Center"/>
                     <TextBox Grid.Row="1" Grid.Column="1" Width="120" HorizontalAlignment="Left" Margin="8,4" Height="24"
+                             KeyboardNavigation.TabIndex="211" AutomationProperties.Name="{loc:Loc Key='SlopeSettings_SurchargeLabel'}" AutomationProperties.HelpText="{loc:Loc Key='SlopeSettings_SurchargeTooltip'}"
                              VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SlopeSettings_SurchargeTooltip'}"
                              Text="{Binding SurchargeKpa, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <CheckBox Grid.Row="2" Grid.Column="1" Margin="8,6" IsChecked="{Binding HasSurchargeRange}"
+                              KeyboardNavigation.TabIndex="212" AutomationProperties.Name="{loc:Loc Key='SlopeSettings_SurchargeRangeLabel'}"
                               Content="{loc:Loc Key='SlopeSettings_SurchargeRangeLabel'}"/>
                     <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="8,4">
-                        <TextBox Width="90" Height="24" VerticalContentAlignment="Center"
+                        <TextBox Width="90" Height="24" KeyboardNavigation.TabIndex="213" AutomationProperties.Name="{loc:Loc Key='Accessibility_SurchargeStart'}" VerticalContentAlignment="Center"
                                  Text="{Binding SurchargeStartX, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="{loc:Loc Key='SlopeSettings_RangeTo'}" VerticalAlignment="Center" Margin="6,0"/>
-                        <TextBox Width="90" Height="24" VerticalContentAlignment="Center"
+                        <TextBox Width="90" Height="24" KeyboardNavigation.TabIndex="214" AutomationProperties.Name="{loc:Loc Key='Accessibility_SurchargeEnd'}" VerticalContentAlignment="Center"
                                  Text="{Binding SurchargeEndX, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
 
                     <TextBlock Grid.Row="4" Grid.Column="0" Text="{loc:Loc Key='SlopeSettings_SeismicLabel'}" VerticalAlignment="Center"/>
                     <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="8,4">
                         <TextBlock Text="kh = " VerticalAlignment="Center"/>
-                        <TextBox Width="70" Height="24" VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SlopeSettings_KhTooltip'}"
+                        <TextBox Width="70" Height="24" KeyboardNavigation.TabIndex="215" AutomationProperties.Name="kh" AutomationProperties.HelpText="{loc:Loc Key='SlopeSettings_KhTooltip'}" VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SlopeSettings_KhTooltip'}"
                                  Text="{Binding Kh, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="  kv = " VerticalAlignment="Center" Margin="10,0,0,0"/>
-                        <TextBox Width="70" Height="24" VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SlopeSettings_KvTooltip'}"
+                        <TextBox Width="70" Height="24" KeyboardNavigation.TabIndex="216" AutomationProperties.Name="kv" AutomationProperties.HelpText="{loc:Loc Key='SlopeSettings_KvTooltip'}" VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SlopeSettings_KvTooltip'}"
                                  Text="{Binding Kv, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
 
                     <TextBlock Grid.Row="5" Grid.Column="0" Text="{loc:Loc Key='SlopeSettings_SearchRangeLabel'}" VerticalAlignment="Center"/>
-                    <RadioButton Grid.Row="5" Grid.Column="1" Margin="8,4" Content="{loc:Loc Key='SlopeSettings_AutoSearch'}" IsChecked="{Binding AutoSearch}"/>
+                    <RadioButton Grid.Row="5" Grid.Column="1" Margin="8,4" KeyboardNavigation.TabIndex="217" Content="{loc:Loc Key='SlopeSettings_AutoSearch'}" IsChecked="{Binding AutoSearch}"/>
                 </Grid>
             </GroupBox>
 
@@ -103,23 +115,23 @@
 
                     <TextBlock Grid.Row="0" Grid.Column="0" Text="cx [m]:" VerticalAlignment="Center"/>
                     <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Margin="8,4">
-                        <TextBox Width="90" Height="24" VerticalContentAlignment="Center" Text="{Binding CxMin, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Width="90" Height="24" KeyboardNavigation.TabIndex="218" AutomationProperties.Name="{loc:Loc Key='Accessibility_CxMinimum'}" VerticalContentAlignment="Center" Text="{Binding CxMin, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="{loc:Loc Key='SlopeSettings_RangeTo'}" VerticalAlignment="Center" Margin="6,0"/>
-                        <TextBox Width="90" Height="24" VerticalContentAlignment="Center" Text="{Binding CxMax, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Width="90" Height="24" KeyboardNavigation.TabIndex="219" AutomationProperties.Name="{loc:Loc Key='Accessibility_CxMaximum'}" VerticalContentAlignment="Center" Text="{Binding CxMax, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
 
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="cz [m]:" VerticalAlignment="Center"/>
                     <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="8,4">
-                        <TextBox Width="90" Height="24" VerticalContentAlignment="Center" Text="{Binding CzMin, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Width="90" Height="24" KeyboardNavigation.TabIndex="220" AutomationProperties.Name="{loc:Loc Key='Accessibility_CzMinimum'}" VerticalContentAlignment="Center" Text="{Binding CzMin, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="{loc:Loc Key='SlopeSettings_RangeTo'}" VerticalAlignment="Center" Margin="6,0"/>
-                        <TextBox Width="90" Height="24" VerticalContentAlignment="Center" Text="{Binding CzMax, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Width="90" Height="24" KeyboardNavigation.TabIndex="221" AutomationProperties.Name="{loc:Loc Key='Accessibility_CzMaximum'}" VerticalContentAlignment="Center" Text="{Binding CzMax, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
 
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="R [m]:" VerticalAlignment="Center"/>
                     <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Margin="8,4">
-                        <TextBox Width="90" Height="24" VerticalContentAlignment="Center" Text="{Binding RadiusMin, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Width="90" Height="24" KeyboardNavigation.TabIndex="222" AutomationProperties.Name="{loc:Loc Key='Accessibility_RadiusMinimum'}" VerticalContentAlignment="Center" Text="{Binding RadiusMin, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="{loc:Loc Key='SlopeSettings_RangeTo'}" VerticalAlignment="Center" Margin="6,0"/>
-                        <TextBox Width="90" Height="24" VerticalContentAlignment="Center" Text="{Binding RadiusMax, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBox Width="90" Height="24" KeyboardNavigation.TabIndex="223" AutomationProperties.Name="{loc:Loc Key='Accessibility_RadiusMaximum'}" VerticalContentAlignment="Center" Text="{Binding RadiusMax, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                 </Grid>
             </GroupBox>
@@ -127,16 +139,20 @@
             <!-- 実行 -->
             <DockPanel Margin="0,8,0,0">
                 <Button DockPanel.Dock="Left" Content="{loc:Loc Key='SlopeSettings_CancelButton'}" Width="90" Height="34" Margin="0,0,8,0"
+                        KeyboardNavigation.TabIndex="230" AutomationProperties.Name="{loc:Loc Key='SlopeSettings_CancelButton'}"
                         Command="{Binding CancelCommand}" IsEnabled="{Binding IsRunning}"/>
                 <Button DockPanel.Dock="Left" Content="{loc:Loc Key='SlopeSettings_RunButton'}" Width="140" Height="34"
+                        KeyboardNavigation.TabIndex="231" AutomationProperties.Name="{loc:Loc Key='SlopeSettings_RunButton'}"
                         Command="{Binding RunCommand}"/>
                 <StackPanel Margin="12,0,0,0">
                     <ProgressBar Height="16" Minimum="0" Maximum="1" Value="{Binding ProgressFraction, Mode=OneWay}"/>
-                    <TextBlock Text="{Binding ProgressText}" FontSize="11" Foreground="#445" Margin="0,2,0,0"/>
+                    <TextBlock Text="{Binding ProgressText}" FontSize="11" Foreground="{DynamicResource SystemColors.ControlTextBrushKey}"
+                               AutomationProperties.LiveSetting="Polite" Margin="0,2,0,0"/>
                 </StackPanel>
             </DockPanel>
 
-            <TextBlock Text="{Binding RunError}" Foreground="#B00020" TextWrapping="Wrap" Margin="0,10,0,0"/>
+            <TextBlock Text="{Binding RunError}" Foreground="{DynamicResource SystemColors.ControlTextBrushKey}"
+                       AutomationProperties.LiveSetting="Assertive" TextWrapping="Wrap" Margin="0,10,0,0"/>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

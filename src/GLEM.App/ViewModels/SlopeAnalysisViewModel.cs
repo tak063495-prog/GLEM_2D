@@ -138,6 +138,11 @@ public sealed partial class SlopeAnalysisViewModel : ObservableObject
     [ObservableProperty]
     private SlopeAnalysisResult? result;
 
+    partial void OnResultChanged(SlopeAnalysisResult? value) => OnPropertyChanged(nameof(ResultIsJanbu));
+
+    /// <summary>結果に一般化ヤンブ法の近似補正が含まれる場合に、UIで注意事項を表示する。</summary>
+    public bool ResultIsJanbu => Result?.Method == SlopeMethod.JanbuGeneralized;
+
     // 直近の解析で用いた地盤モデル（S-4 の断面図描画・レポート用）
     public GroundModel? LastGroundModel { get; private set; }
 

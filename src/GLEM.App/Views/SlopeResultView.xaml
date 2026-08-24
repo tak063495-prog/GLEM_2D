@@ -7,6 +7,7 @@
     <UserControl.Resources>
         <conv:SlopeMethodDisplayConverter x:Key="SlopeMethodDisplay"/>
         <conv:BoolYesNoConverter x:Key="BoolYesNo"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </UserControl.Resources>
     <DockPanel Margin="12">
         <!-- 結果ヘッダ -->
@@ -22,17 +23,30 @@
             </TextBlock>
         </StackPanel>
 
+        <Border DockPanel.Dock="Top" Padding="10" Margin="0,0,0,8" BorderThickness="2"
+                BorderBrush="{DynamicResource SystemColors.HighlightBrushKey}"
+                Background="{DynamicResource SystemColors.ControlBrushKey}"
+                Visibility="{Binding ResultIsJanbu, Converter={StaticResource BoolToVis}}">
+            <TextBlock Text="{loc:Loc Key='Janbu_ApproximationWarning'}" TextWrapping="Wrap"
+                       FontWeight="SemiBold" AutomationProperties.LiveSetting="Polite"/>
+        </Border>
+
         <!-- 出力 -->
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
-            <Button Content="{loc:Loc Key='SlopeResult_ExportCsvButton'}" Width="120" Height="30" Click="ExportCsv_Click"/>
-            <Button Content="{loc:Loc Key='SlopeResult_GenerateReportButton'}" Width="140" Height="30" Margin="8,0,0,0" Click="Report_Click"/>
+            <Button Content="{loc:Loc Key='SlopeResult_ExportCsvButton'}" Width="120" Height="30"
+                    KeyboardNavigation.TabIndex="410" AutomationProperties.Name="{loc:Loc Key='SlopeResult_ExportCsvButton'}" Click="ExportCsv_Click"/>
+            <Button Content="{loc:Loc Key='SlopeResult_GenerateReportButton'}" Width="140" Height="30" Margin="8,0,0,0"
+                    KeyboardNavigation.TabIndex="411" AutomationProperties.Name="{loc:Loc Key='SlopeResult_GenerateReportButton'}" Click="Report_Click"/>
         </StackPanel>
 
         <!-- 断面図 -->
-        <sp:WpfPlot x:Name="CrossSectionPlot" DockPanel.Dock="Top" Height="360" Margin="0,0,0,8"/>
+        <sp:WpfPlot x:Name="CrossSectionPlot" DockPanel.Dock="Top" Height="360" Margin="0,0,0,8"
+                    KeyboardNavigation.TabIndex="400" AutomationProperties.Name="{loc:Loc Key='Accessibility_CrossSectionPlot'}"
+                    AutomationProperties.HelpText="{loc:Loc Key='Accessibility_CrossSectionPlotHelp'}"/>
 
         <!-- 条体別結果テーブル -->
         <DataGrid ItemsSource="{Binding Result.Slices}" AutoGenerateColumns="False" IsReadOnly="True"
+                  KeyboardNavigation.TabIndex="401" AutomationProperties.Name="{loc:Loc Key='Accessibility_SliceResultTable'}"
                   HeadersVisibility="Column" GridLinesVisibility="All">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="slice_no" Binding="{Binding SliceNo}"/>

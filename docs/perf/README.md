@@ -11,11 +11,19 @@
 
 - テスト: `tests/GLEM.Tests/PerformanceTests.cs` → `StandardModel_WithinTimeBudget`
 - 実行: `dotnet test GLEM.sln -c Release --filter "FullyQualifiedName~PerformanceTests"`
-- 判定は閾値2倍超過で失敗（CI ランナーの性能ばらつき対策、TRISK-02/PRISK-04）。基準値超過・2倍未満の場合はパスしつつ本ログに記録し、リグレッションとして評価する。
+- 判定は閾値2倍超過で失敗（CI ランナーの性能ばらつき対策、TRISK-02/PRISK-04）。通常のローカルテストは追跡対象ファイルを書き換えない。記録が必要な場合だけ、下記の環境変数を設定する。
+
+```powershell
+$env:GLEM_RECORD_PERF = '1'
+$env:GLEM_PERF_OUTPUT = Join-Path $env:TEMP 'GLEM\perf\perf-log.jsonl'
+dotnet test GLEM.sln -c Release --filter "FullyQualifiedName~PerformanceTests"
+```
+
+CIではランナーの一時ディレクトリへ記録し、`glem-performance-log` artifactとして保存する。
 
 ## 記録ファイル
 
-`perf-log.jsonl` — テスト実行ごとに1行（JSON Lines）追記される時系列記録。各エントリのフィールド:
+記録モードで指定した `perf-log.jsonl` へ、テスト実行ごとに1行（JSON Lines）を追記する。各エントリのフィールド:
 
 | フィールド | 内容 |
 |---|---|
@@ -31,4 +39,4 @@
 |---|---|---|---|---|
 | 2026-08-23T06:03+09:00 | Windows 10.0.26200 / 12コア / .NET 8.0.30（開発機 RICO） | 7.79 | 0.012 | パス（基準内: <60s / <30s） |
 
-> 詳細な環境情報と全エントリは `perf-log.jsonl` を参照。
+> 過去の基準記録はリポジトリ内の `perf-log.jsonl` を参照。新しい測定は明示的に記録モードを有効にした場合、またはCI artifactにだけ保存される。

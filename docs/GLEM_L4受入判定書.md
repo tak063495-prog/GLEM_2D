@@ -18,7 +18,7 @@
 
 | 基準 | 内容（機能仕様書 §8/§9） | 証拠（テスト計画書 §8.2、全パス） |
 |---|---|---|
-| A-1 | 標準検証ケースで FS の誤差 ±0.01 以内 | `T01_Fellenius_MatchesHandCalculation`、`T02_Bishop_ConvergesAndSatisfiesFixedPoint`、`T03a_Janbu_OnCircularSurface_EquivalentToFellenius`、`T03b_Janbu_NonCircularSurface_CorrectionApplied`、`T03c_Janbu_FlatSurface_NoCorrection`、`T03d/T03e_Janbu_NonCircular_MatchesPublishedFormulaReferenceCase1/2`（公開文献の閉形式補正式との照合） |
+| A-1 | 標準検証ケースで FS の誤差 ±0.01 以内 | `T01_Fellenius_MatchesHandCalculation`、`T02_Bishop_ConvergesAndSatisfiesFixedPoint`、`T03a〜T03e` と `ReferenceCaseTests`。T03の λc は公開Janbu補正の考え方を参考にしたGLEM固有式の固定値回帰であり、完全なJanbu一般化法との照合ではない |
 | A-2 | 全テストモデルで最大反復回数以内に収束 | `T02_Bishop_ConvergesAndSatisfiesFixedPoint`（固定点条件の検証を含む） |
 | A-3 | ru=0 と静水圧条件の両方で FS が正しく変化（水位上昇で低下） | `T04_PoreWaterPressure_DecreasesSafetyFactor` |
 | A-4 | 単一層圧密問題で理論解との沈下量誤差 ±2% 以内 | `T07a_PrimaryConsolidation_MatchesHandCalculation`、`T07b_ImmediateSettlement_MatchesAnalyticalInfluenceFactor`、`T07c_ImmediateSettlement_IsLinearInLoad` |

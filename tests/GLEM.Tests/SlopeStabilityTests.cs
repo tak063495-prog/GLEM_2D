@@ -142,7 +142,7 @@ public sealed class SlopeStabilityTests
         LambdaCalculator.ComputeLambdaC(flat).Should().BeApproximately(1.0, 1e-12);
     }
 
-    // T-03d: published-formula reference case #1 (Janbu 1964 correction, Das "Advanced Soil Mechanics").
+    // T-03d: independent baseline #1 for GLEM's project-specific angle-spread correction.
     // Hand-computed from the explicit slice data below:
     //   D = sum(Wi sin ai) = 100*sin45 + 120*sin30 + 140*sin15 = 166.9453 kN/m
     //   alpha_bar (D-weighted) = 0.57766 rad
@@ -150,7 +150,7 @@ public sealed class SlopeStabilityTests
     //   R = c'*sum(dL) + tan(25deg)*sum(Wi cos ai) = 80 + 0.46631*459.8633 = 294.43 kN/m
     //   FS_ref = R/(lambda_c*D) = 294.43/196.324 = 1.4997
     [Fact]
-    public void T03d_Janbu_NonCircular_MatchesPublishedFormulaReferenceCase1()
+    public void T03d_JanbuApproximation_NonCircular_MatchesIndependentBaseline1()
     {
         var gm = new GroundModel
         {
@@ -180,7 +180,7 @@ public sealed class SlopeStabilityTests
         var lambdaC = LambdaCalculator.ComputeLambdaC(slices);
         lambdaC.Should().BeApproximately(1.176, 0.005);
 
-        // Independent reference computation from the published formula (c'=10 kPa, phi'=25 deg, u=0).
+        // Independent computation from the documented GLEM approximation (c'=10 kPa, phi'=25 deg, u=0).
         var d = 100.0 * Math.Sin(Math.PI / 4) + 120.0 * Math.Sin(Math.PI / 6) + 140.0 * Math.Sin(Math.PI / 12);
         var alphaBarNumerator = 100.0 * Math.Sin(Math.PI / 4) * (Math.PI / 4)
                                + 120.0 * Math.Sin(Math.PI / 6) * (Math.PI / 6)
@@ -203,7 +203,7 @@ public sealed class SlopeStabilityTests
         fsJanbu.Should().BeApproximately(fsRef, 1e-9);
     }
 
-    // T-03e: published-formula reference case #2 (steeper, wider angle spread -> larger lambda_c).
+    // T-03e: independent baseline #2 (steeper, wider angle spread -> larger lambda_c).
     // Hand-computed from the explicit slice data below:
     //   D = 80*sin60 + 90*sin45 + 110*sin20 + 130*sin5 = 181.8741 kN/m
     //   alpha_bar (D-weighted) = 0.75137 rad
@@ -211,7 +211,7 @@ public sealed class SlopeStabilityTests
     //   R = c'*sum(dL) + tan(30deg)*sum(Wi cos ai) = 64 + 0.57735*336.5111 = 258.29 kN/m
     //   FS_ref = R/(lambda_c*D) = 258.29/227.19 = 1.1369
     [Fact]
-    public void T03e_Janbu_NonCircular_MatchesPublishedFormulaReferenceCase2()
+    public void T03e_JanbuApproximation_NonCircular_MatchesIndependentBaseline2()
     {
         var gm = new GroundModel
         {

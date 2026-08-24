@@ -21,17 +21,19 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="{loc:Loc Key='SettlementSettings_LoadLabel'}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="SettlementLoadLabel" Grid.Row="0" Text="{loc:Loc Key='SettlementSettings_LoadLabel'}" VerticalAlignment="Center"/>
                     <TextBox Grid.Row="0" Grid.Column="1" Width="120" HorizontalAlignment="Left" Margin="8,4" Height="24"
+                             KeyboardNavigation.TabIndex="300" AutomationProperties.LabeledBy="{Binding ElementName=SettlementLoadLabel}"
+                             AutomationProperties.HelpText="{loc:Loc Key='SettlementSettings_LoadTooltip'}"
                              VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SettlementSettings_LoadTooltip'}"
                              Text="{Binding LoadKpa, UpdateSourceTrigger=PropertyChanged}"/>
 
-                    <TextBlock Grid.Row="1" Text="{loc:Loc Key='SettlementSettings_AreaLabel'}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="SettlementAreaLabel" Grid.Row="1" Text="{loc:Loc Key='SettlementSettings_AreaLabel'}" VerticalAlignment="Center"/>
                     <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="8,4">
-                        <TextBox Width="90" Height="24" VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SettlementSettings_AreaBTooltip'}"
+                        <TextBox Width="90" Height="24" KeyboardNavigation.TabIndex="301" AutomationProperties.Name="{loc:Loc Key='Accessibility_LoadedAreaWidth'}" AutomationProperties.HelpText="{loc:Loc Key='SettlementSettings_AreaBTooltip'}" VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SettlementSettings_AreaBTooltip'}"
                                  Text="{Binding LoadedAreaB, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text=" x " VerticalAlignment="Center" Margin="6,0"/>
-                        <TextBox Width="90" Height="24" VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SettlementSettings_AreaLTooltip'}"
+                        <TextBox Width="90" Height="24" KeyboardNavigation.TabIndex="302" AutomationProperties.Name="{loc:Loc Key='Accessibility_LoadedAreaLength'}" AutomationProperties.HelpText="{loc:Loc Key='SettlementSettings_AreaLTooltip'}" VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SettlementSettings_AreaLTooltip'}"
                                  Text="{Binding LoadedAreaL, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                 </Grid>
@@ -49,8 +51,9 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="{loc:Loc Key='SettlementSettings_DrainageLabel'}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="DrainageLabel" Grid.Row="0" Text="{loc:Loc Key='SettlementSettings_DrainageLabel'}" VerticalAlignment="Center"/>
                     <ComboBox Grid.Row="0" Grid.Column="1" Width="200" HorizontalAlignment="Left" Margin="8,4"
+                              KeyboardNavigation.TabIndex="303" AutomationProperties.LabeledBy="{Binding ElementName=DrainageLabel}"
                               ItemsSource="{Binding DrainageOptions}" SelectedItem="{Binding DrainageMode}">
                         <!-- 表示のみをローカライズ。SelectedItem は引き続き Drainage のまま -->
                         <ComboBox.ItemTemplate>
@@ -60,21 +63,27 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-                    <TextBlock Grid.Row="1" Text="{loc:Loc Key='SettlementSettings_DurationLabel'}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="DurationLabel" Grid.Row="1" Text="{loc:Loc Key='SettlementSettings_DurationLabel'}" VerticalAlignment="Center"/>
                     <TextBox Grid.Row="1" Grid.Column="1" Width="120" HorizontalAlignment="Left" Margin="8,4" Height="24"
+                             KeyboardNavigation.TabIndex="304" AutomationProperties.LabeledBy="{Binding ElementName=DurationLabel}"
+                             AutomationProperties.HelpText="{loc:Loc Key='SettlementSettings_DurationTooltip'}"
                              VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SettlementSettings_DurationTooltip'}"
                              Text="{Binding DurationYears, UpdateSourceTrigger=PropertyChanged}"/>
 
-                    <TextBlock Grid.Row="2" Text="{loc:Loc Key='SettlementSettings_OutputPointsLabel'}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="OutputPointsLabel" Grid.Row="2" Text="{loc:Loc Key='SettlementSettings_OutputPointsLabel'}" VerticalAlignment="Center"/>
                     <TextBox Grid.Row="2" Grid.Column="1" Width="120" HorizontalAlignment="Left" Margin="8,4" Height="24"
+                             KeyboardNavigation.TabIndex="305" AutomationProperties.LabeledBy="{Binding ElementName=OutputPointsLabel}"
+                             AutomationProperties.HelpText="{loc:Loc Key='SettlementSettings_OutputPointsTooltip'}"
                              VerticalContentAlignment="Center" ToolTip="{loc:Loc Key='SettlementSettings_OutputPointsTooltip'}"
                              Text="{Binding OutputPointCount, UpdateSourceTrigger=PropertyChanged}"/>
                 </Grid>
             </GroupBox>
 
             <DockPanel Margin="0,8,0,0">
-                <Button Content="{loc:Loc Key='SettlementSettings_RunButton'}" Width="140" Height="34" Command="{Binding RunCommand}"/>
-                <TextBlock Text="{Binding RunError}" Foreground="#B00020" TextWrapping="Wrap" Margin="16,0,0,0" VerticalAlignment="Center"/>
+                <Button Content="{loc:Loc Key='SettlementSettings_RunButton'}" Width="140" Height="34"
+                        KeyboardNavigation.TabIndex="306" AutomationProperties.Name="{loc:Loc Key='SettlementSettings_RunButton'}" Command="{Binding RunCommand}"/>
+                <TextBlock Text="{Binding RunError}" Foreground="{DynamicResource SystemColors.ControlTextBrushKey}"
+                           AutomationProperties.LiveSetting="Assertive" TextWrapping="Wrap" Margin="16,0,0,0" VerticalAlignment="Center"/>
             </DockPanel>
         </StackPanel>
     </ScrollViewer>

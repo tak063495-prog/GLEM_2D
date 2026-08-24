@@ -10,7 +10,7 @@ GLEM is a Windows desktop application for geotechnical slope stability and settl
 
 ## Features
 
-- Slope stability analysis using the Fellenius, simplified Bishop, and generalized Janbu methods
+- Slope stability analysis using the Fellenius and simplified Bishop methods, plus GLEM's approximate Janbu-style correction for non-circular surfaces
 - Circular slip-surface search with configurable center, radius, and slice width
 - Non-circular Janbu surfaces defined by editable control points
 - Pore-water pressure from ru or a groundwater table, plus surcharge and pseudo-static seismic coefficients
@@ -34,7 +34,15 @@ Project (`.glem`) and CSV data formats remain language-neutral and use stable in
 
 ## Download and run
 
-Download the latest `GLEM-<version>-win-x64.zip` from [Releases](https://github.com/tak063495-prog/GLEM_2D/releases), extract it, and run `GLEM.exe`.
+Download either the `GLEM-<version>-win-x64-Setup.exe` installer or the portable `GLEM-<version>-win-x64.zip` from [Releases](https://github.com/tak063495-prog/GLEM_2D/releases). The installer creates Start menu entries and associates `.glem` project files; the portable package can be extracted and started with `GLEM.exe`.
+
+Each release also provides SHA-256 checksum files for the ZIP and installer, plus a CycloneDX SBOM. Verify the portable package before use:
+
+```powershell
+$version = ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.ProductVersion
+$zip = Get-ChildItem artifacts/release/GLEM-$version-win-x64.zip
+pwsh -NoProfile -File scripts/verify-release.ps1 -Archive $zip.FullName -Version $version
+```
 
 GLEM is intended for engineering analysis and verification. Results depend on the input data and model assumptions; they must be reviewed by a qualified engineer before being used for design or safety-critical decisions.
 
@@ -62,7 +70,16 @@ Run the packaging script from the repository root. The output is written to the 
 pwsh -NoProfile -File scripts/package-release.ps1
 ```
 
-When `-Version` is omitted, the script reads the product version from `Directory.Build.props`. The same packaging step runs automatically when a tag such as `v1.1.0` is pushed. The release workflow expands the generated archive, runs `GLEM.exe --selftest`, creates a GitHub Release, and uploads the zip package.
+When `-Version` is omitted, the script reads the product version from `Directory.Build.props`. The same packaging step runs automatically when a tag such as `v1.2.0` is pushed. The release workflow verifies the archive name, version, contents, and checksum; expands it; runs `GLEM.exe --selftest`; generates an installer, SHA-256 file, and CycloneDX SBOM; and uploads all artifacts to the GitHub Release. If the repository secrets `WINDOWS_CERTIFICATE_BASE64` and `WINDOWS_CERTIFICATE_PASSWORD` are configured, both `GLEM.exe` and the installer are Authenticode-signed before publication. Builds without those secrets remain unsigned and are identified as such in the workflow log.
+
+## Keyboard and accessibility
+
+- `Ctrl+N`: new project
+- `Ctrl+O`: open project
+- `Ctrl+S`: save
+- `Ctrl+Shift+S`: save as
+- Keyboard tab order, access keys, and screen-reader names are provided for primary workflows.
+- Plots combine labels and line patterns with color, and the UI follows Windows high-contrast system colors.
 
 ## Architecture
 
@@ -80,6 +97,7 @@ GLEM.sln
 - [Detailed design](docs/GLEM_詳細設計書.md)
 - [Test plan](docs/GLEM_テスト計画書.md)
 - [User manual](docs/GLEM_ユーザーマニュアル.md)
+- [Calculation methods, assumptions, and reference cases](docs/METHODS.md) ([日本語](docs/METHODS.ja.md))
 - [Release notes](RELEASE-NOTES.md)
 - [Performance records](docs/perf/README.md)
 

@@ -178,7 +178,7 @@
     <value>簡易ビショップ法</value>
   </data>
   <data name="SlopeMethod_JanbuGeneralized" xml:space="preserve">
-    <value>一般化ヤンブ法</value>
+    <value>ヤンブ型（GLEM近似）</value>
   </data>
   <data name="Drainage_Single" xml:space="preserve">
     <value>片面排水</value>
@@ -418,7 +418,7 @@
     <value>フェレニウス法（円すべり面）</value>
   </data>
   <data name="SlopeSettings_Method_Janbu" xml:space="preserve">
-    <value>一般化ヤンブ法（非円すべり面）</value>
+    <value>ヤンブ型GLEM近似（非円すべり面）</value>
   </data>
   <data name="SlopeSettings_ControlPointsGroup" xml:space="preserve">
     <value>すべり面制御点（ヤンブ法選択時に表示）</value>
@@ -615,4 +615,33 @@
   <data name="SettlementPlot_T90AnnotationFormat" xml:space="preserve">
     <value>U=90%（T90={0:F0} 日）</value>
   </data>
+  <data name="Janbu_ApproximationWarning" xml:space="preserve"><value>注意：一般化ヤンブ法の λc 補正は、公開された補正概念を参考にした GLEM 固有の近似です。結果を使用する前に、手法の適用範囲と既知の制限を確認してください。</value></data>
+  <data name="CrossSection_LegendGroundSurface" xml:space="preserve"><value>地表面（実線）</value></data>
+  <data name="CrossSection_LegendWaterTable" xml:space="preserve"><value>地下水位（破線）</value></data>
+  <data name="CrossSection_LegendCriticalSurface" xml:space="preserve"><value>臨界すべり面（密破線）</value></data>
+  <data name="Accessibility_MainWindowName" xml:space="preserve"><value>GLEM 地盤解析</value></data>
+  <data name="Accessibility_StatusMessage" xml:space="preserve"><value>アプリケーションの状態</value></data>
+  <data name="Accessibility_NavGroundModel" xml:space="preserve"><value>地盤モデル編集を開く</value></data>
+  <data name="Accessibility_NavSlopeSettings" xml:space="preserve"><value>斜面安定解析設定を開く</value></data>
+  <data name="Accessibility_NavSlopeResults" xml:space="preserve"><value>斜面安定解析結果を開く</value></data>
+  <data name="Accessibility_NavSettlementSettings" xml:space="preserve"><value>沈下解析設定を開く</value></data>
+  <data name="Accessibility_NavSettlementResults" xml:space="preserve"><value>沈下解析結果を開く</value></data>
+  <data name="Accessibility_GroundLayerTable" xml:space="preserve"><value>地盤層物性テーブル</value></data>
+  <data name="Accessibility_ControlPointTable" xml:space="preserve"><value>ヤンブ法すべり面制御点テーブル</value></data>
+  <data name="Accessibility_SurchargeStart" xml:space="preserve"><value>載荷範囲の開始 x</value></data>
+  <data name="Accessibility_SurchargeEnd" xml:space="preserve"><value>載荷範囲の終了 x</value></data>
+  <data name="Accessibility_CxMinimum" xml:space="preserve"><value>円中心 x の最小値</value></data>
+  <data name="Accessibility_CxMaximum" xml:space="preserve"><value>円中心 x の最大値</value></data>
+  <data name="Accessibility_CzMinimum" xml:space="preserve"><value>円中心 z の最小値</value></data>
+  <data name="Accessibility_CzMaximum" xml:space="preserve"><value>円中心 z の最大値</value></data>
+  <data name="Accessibility_RadiusMinimum" xml:space="preserve"><value>円半径の最小値</value></data>
+  <data name="Accessibility_RadiusMaximum" xml:space="preserve"><value>円半径の最大値</value></data>
+  <data name="Accessibility_LoadedAreaWidth" xml:space="preserve"><value>載荷範囲の幅 B</value></data>
+  <data name="Accessibility_LoadedAreaLength" xml:space="preserve"><value>載荷範囲の長さ L</value></data>
+  <data name="Accessibility_CrossSectionPlot" xml:space="preserve"><value>斜面断面図</value></data>
+  <data name="Accessibility_CrossSectionPlotHelp" xml:space="preserve"><value>地盤層には名称を表示し、地下水位は破線、臨界すべり面は密破線で示します。</value></data>
+  <data name="Accessibility_SliceResultTable" xml:space="preserve"><value>斜面スライス結果テーブル</value></data>
+  <data name="Accessibility_SettlementPlot" xml:space="preserve"><value>沈下量と時間のグラフ</value></data>
+  <data name="Accessibility_SettlementPlotHelp" xml:space="preserve"><value>合計・即時・一次圧密・二次圧縮の各曲線を異なる線種で示します。</value></data>
+  <data name="Accessibility_SettlementResultTable" xml:space="preserve"><value>沈下時間系列結果テーブル</value></data>
 </root>

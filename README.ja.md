@@ -14,10 +14,11 @@ English version: [README.md](README.md)
 | [docs/GLEM_テスト計画書.md](docs/GLEM_テスト計画書.md) | テストレベル・不具合管理・CI |
 | [docs/GLEM_ユーザーマニュアル.md](docs/GLEM_ユーザーマニュアル.md) | ユーザー向け操作手順・FAQ |
 | [docs/GLEM_実装計画書.md](docs/GLEM_実装計画書.md) | マイルストーン M0〜M4・WBS・リスク |
+| [docs/METHODS.ja.md](docs/METHODS.ja.md) | 使用式・仮定・適用範囲・制限・参照ケース（[English](docs/METHODS.md)） |
 
 ## 主な機能
 
-- Fellenius法・Bishop簡化法・Janbu一般化条体法による斜面安定解析
+- Fellenius法・Bishop簡化法、および非円形滑動面に対するGLEM独自の近似Janbu型補正による斜面安定解析
 - 円弧滑動面の自動探索、中心・半径・条体幅の設定
 - 制御点で定義するJanbu非円滑動面
 - ruまたは地下水位線による間隙水圧、載荷、擬静力学的地震係数
@@ -60,7 +61,18 @@ powershell -NoProfile -File scripts/coverage-gate.ps1 -CoverageXmlPath $xml.Full
 pwsh -NoProfile -File scripts/package-release.ps1
 ```
 
-`-Version` を省略すると、`Directory.Build.props` の製品バージョンを使用します。タグ `v1.1.0` をpushすると、GitHub Actionsがzipを生成し、展開後の `GLEM.exe --selftest` に成功した場合だけReleaseへアップロードします。
+`-Version` を省略すると、`Directory.Build.props` の製品バージョンを使用します。タグ `v1.2.0` をpushすると、GitHub ActionsがZIP名・バージョン・内容・SHA-256を検証し、展開後の `GLEM.exe --selftest` に成功した場合だけ、ZIP、インストーラー、SHA-256ファイル、CycloneDX SBOMをReleaseへアップロードします。`WINDOWS_CERTIFICATE_BASE64` と `WINDOWS_CERTIFICATE_PASSWORD` のRepository secretsが設定されている場合、配布EXEとインストーラーをAuthenticode署名します。未設定時は署名なしで生成し、その旨をworkflowログへ明記します。
+
+利用者はReleaseから `GLEM-<version>-win-x64-Setup.exe` を選ぶと、スタートメニュー登録と `.glem` 関連付けを含むインストールができます。ポータブル版ZIPも引き続き利用できます。ReleaseにはZIPとインストーラーそれぞれの検証用SHA-256、およびSBOMが同梱されます。
+
+## キーボード操作とアクセシビリティ
+
+- `Ctrl+N`: 新規作成
+- `Ctrl+O`: 開く
+- `Ctrl+S`: 保存
+- `Ctrl+Shift+S`: 名前を付けて保存
+- 主要画面にタブ移動順、アクセスキー、スクリーンリーダー向け名称を設定しています。
+- グラフは色に加えて線種と凡例で識別でき、Windowsのハイコントラスト設定に追従します。
 
 ## 免責事項
 

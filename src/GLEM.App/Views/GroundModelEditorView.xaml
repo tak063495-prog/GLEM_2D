@@ -11,23 +11,38 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding ErrorFields, Converter={StaticResource FieldInSet}, ConverterParameter=thickness_m}" Value="True">
-                    <Setter Property="BorderBrush" Value="Red"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemColors.HighlightBrushKey}"/>
+                    <Setter Property="BorderThickness" Value="3"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="AutomationProperties.HelpText" Value="{Binding ErrorMessage}"/>
                     <Setter Property="ToolTip" Value="{Binding ErrorMessage}"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding ErrorFields, Converter={StaticResource FieldInSet}, ConverterParameter=gamma_kn_m3}" Value="True">
-                    <Setter Property="BorderBrush" Value="Red"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemColors.HighlightBrushKey}"/>
+                    <Setter Property="BorderThickness" Value="3"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="AutomationProperties.HelpText" Value="{Binding ErrorMessage}"/>
                     <Setter Property="ToolTip" Value="{Binding ErrorMessage}"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding ErrorFields, Converter={StaticResource FieldInSet}, ConverterParameter=c_kpa}" Value="True">
-                    <Setter Property="BorderBrush" Value="Red"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemColors.HighlightBrushKey}"/>
+                    <Setter Property="BorderThickness" Value="3"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="AutomationProperties.HelpText" Value="{Binding ErrorMessage}"/>
                     <Setter Property="ToolTip" Value="{Binding ErrorMessage}"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding ErrorFields, Converter={StaticResource FieldInSet}, ConverterParameter=phi_deg}" Value="True">
-                    <Setter Property="BorderBrush" Value="Red"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemColors.HighlightBrushKey}"/>
+                    <Setter Property="BorderThickness" Value="3"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="AutomationProperties.HelpText" Value="{Binding ErrorMessage}"/>
                     <Setter Property="ToolTip" Value="{Binding ErrorMessage}"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding ErrorFields, Converter={StaticResource FieldInSet}, ConverterParameter=ru_ratio}" Value="True">
-                    <Setter Property="BorderBrush" Value="Red"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemColors.HighlightBrushKey}"/>
+                    <Setter Property="BorderThickness" Value="3"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="AutomationProperties.HelpText" Value="{Binding ErrorMessage}"/>
                     <Setter Property="ToolTip" Value="{Binding ErrorMessage}"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -37,8 +52,10 @@
     <DockPanel Margin="12">
         <!-- Groundwater level -->
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-            <TextBlock Text="{loc:Loc Key='GroundModel_WaterTableLabel'}" VerticalAlignment="Center"/>
+            <TextBlock x:Name="WaterTableLabel" Text="{loc:Loc Key='GroundModel_WaterTableLabel'}" VerticalAlignment="Center"/>
             <TextBox Width="80" Margin="8,0" Height="24" VerticalContentAlignment="Center"
+                     KeyboardNavigation.TabIndex="100" AutomationProperties.LabeledBy="{Binding ElementName=WaterTableLabel}"
+                     AutomationProperties.HelpText="{loc:Loc Key='GroundModel_WaterTableTooltip'}"
                      Text="{Binding WaterTableDepthM, UpdateSourceTrigger=PropertyChanged}"
                      ToolTip="{loc:Loc Key='GroundModel_WaterTableTooltip'}"
                      BorderBrush="{Binding HasWaterTableError, Converter={StaticResource BoolToBorder}}"/>
@@ -47,21 +64,24 @@
         <!-- Validation result -->
         <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
             <Button Content="{loc:Loc Key='GroundModel_RunValidationButton'}" Width="120" Height="30" DockPanel.Dock="Left"
+                    KeyboardNavigation.TabIndex="130" AutomationProperties.Name="{loc:Loc Key='GroundModel_RunValidationButton'}"
                     Command="{Binding RunValidationCommand}"/>
             <TextBlock Text="{Binding ValidationSummary}" VerticalAlignment="Center" Margin="12,0,0,0"
-                       TextWrapping="Wrap" Foreground="#B00020"/>
+                       AutomationProperties.LiveSetting="Assertive" TextWrapping="Wrap"
+                       Foreground="{DynamicResource SystemColors.ControlTextBrushKey}"/>
         </DockPanel>
 
         <!-- Layer operations -->
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
-            <Button Content="{loc:Loc Key='GroundModel_AddLayerButton'}" Width="100" Height="28" Command="{Binding AddLayerCommand}"/>
-            <Button Content="{loc:Loc Key='GroundModel_RemoveLayerButton'}" Width="130" Height="28" Margin="6,0,0,0" Command="{Binding RemoveSelectedCommand}"/>
-            <Button Content="{loc:Loc Key='GroundModel_MoveUpButton'}" Width="40" Height="28" Margin="6,0,0,0" Command="{Binding MoveUpCommand}"/>
-            <Button Content="{loc:Loc Key='GroundModel_MoveDownButton'}" Width="50" Height="28" Margin="6,0,0,0" Command="{Binding MoveDownCommand}"/>
+            <Button Content="{loc:Loc Key='GroundModel_AddLayerButton'}" Width="100" Height="28" KeyboardNavigation.TabIndex="120" AutomationProperties.Name="{loc:Loc Key='GroundModel_AddLayerButton'}" Command="{Binding AddLayerCommand}"/>
+            <Button Content="{loc:Loc Key='GroundModel_RemoveLayerButton'}" Width="130" Height="28" Margin="6,0,0,0" KeyboardNavigation.TabIndex="121" AutomationProperties.Name="{loc:Loc Key='GroundModel_RemoveLayerButton'}" Command="{Binding RemoveSelectedCommand}"/>
+            <Button Content="{loc:Loc Key='GroundModel_MoveUpButton'}" Width="52" Height="28" Margin="6,0,0,0" KeyboardNavigation.TabIndex="122" AutomationProperties.Name="{loc:Loc Key='GroundModel_MoveUpButton'}" Command="{Binding MoveUpCommand}"/>
+            <Button Content="{loc:Loc Key='GroundModel_MoveDownButton'}" Width="58" Height="28" Margin="6,0,0,0" KeyboardNavigation.TabIndex="123" AutomationProperties.Name="{loc:Loc Key='GroundModel_MoveDownButton'}" Command="{Binding MoveDownCommand}"/>
         </StackPanel>
 
         <!-- Layer table -->
         <DataGrid ItemsSource="{Binding Layers}" SelectedItem="{Binding SelectedLayer}"
+                  KeyboardNavigation.TabIndex="110" AutomationProperties.Name="{loc:Loc Key='Accessibility_GroundLayerTable'}"
                   AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column"
                   CellStyle="{StaticResource ErrorCellStyle}" GridLinesVisibility="All">
             <DataGrid.Columns>

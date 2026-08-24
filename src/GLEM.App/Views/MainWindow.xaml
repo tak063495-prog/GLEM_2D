@@ -5,7 +5,16 @@
         xmlns:loc="clr-namespace:GLEM.App.Localization"
         xmlns:views="clr-namespace:GLEM.App.Views"
         Title="GLEM" Height="720" Width="1080"
+        Icon="/Assets/GLEM.ico"
+        AutomationProperties.Name="{loc:Loc Key='Accessibility_MainWindowName'}"
+        KeyboardNavigation.TabNavigation="Cycle"
         Closing="Window_Closing">
+    <Window.InputBindings>
+        <KeyBinding Key="N" Modifiers="Control" Command="{Binding NewProjectCommand}"/>
+        <KeyBinding Key="O" Modifiers="Control" Command="{Binding RequestOpenCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveCommand}"/>
+        <KeyBinding Key="S" Modifiers="Control+Shift" Command="{Binding RequestSaveAsCommand}"/>
+    </Window.InputBindings>
     <Window.Resources>
         <conv:ScreenMatchConverter x:Key="ScreenMatch"/>
     </Window.Resources>
@@ -13,11 +22,11 @@
         <!-- Menu bar -->
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="{loc:Loc Key='Menu_File'}">
-                <MenuItem Header="{loc:Loc Key='Menu_New'}" Command="{Binding NewProjectCommand}"/>
+                <MenuItem Header="{loc:Loc Key='Menu_New'}" InputGestureText="Ctrl+N" Command="{Binding NewProjectCommand}"/>
                 <Separator/>
-                <MenuItem Header="{loc:Loc Key='Menu_Open'}" Command="{Binding RequestOpenCommand}"/>
-                <MenuItem Header="{loc:Loc Key='Menu_Save'}" Command="{Binding SaveCommand}"/>
-                <MenuItem Header="{loc:Loc Key='Menu_SaveAs'}" Command="{Binding RequestSaveAsCommand}"/>
+                <MenuItem Header="{loc:Loc Key='Menu_Open'}" InputGestureText="Ctrl+O" Command="{Binding RequestOpenCommand}"/>
+                <MenuItem Header="{loc:Loc Key='Menu_Save'}" InputGestureText="Ctrl+S" Command="{Binding SaveCommand}"/>
+                <MenuItem Header="{loc:Loc Key='Menu_SaveAs'}" InputGestureText="Ctrl+Shift+S" Command="{Binding RequestSaveAsCommand}"/>
             </MenuItem>
             <MenuItem Header="{loc:Loc Key='Menu_Language'}">
                 <MenuItem x:Name="LanguageSystemMenuItem" IsCheckable="True" Tag="System" Click="Language_Click"
@@ -35,7 +44,8 @@
         <!-- Status bar -->
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem>
-                <TextBlock Text="{Binding StatusText}"/>
+                <TextBlock Text="{Binding StatusText}" AutomationProperties.LiveSetting="Polite"
+                           AutomationProperties.Name="{loc:Loc Key='Accessibility_StatusMessage'}"/>
             </StatusBarItem>
         </StatusBar>
 
@@ -49,15 +59,20 @@
             <StackPanel Grid.Column="0" Margin="8">
                 <TextBlock Text="GLEM" FontSize="20" FontWeight="Bold" Margin="4,4,4,12"/>
                 <Button Content="{loc:Loc Key='Nav_GroundModel'}" Height="34" Margin="0,2" Padding="6"
+                        AutomationProperties.Name="{loc:Loc Key='Accessibility_NavGroundModel'}" KeyboardNavigation.TabIndex="10"
                         Command="{Binding NavigateCommand}" CommandParameter="GroundModel"/>
                 <Button Content="{loc:Loc Key='Nav_SlopeSettings'}" Height="34" Margin="0,2" Padding="6"
+                        AutomationProperties.Name="{loc:Loc Key='Accessibility_NavSlopeSettings'}" KeyboardNavigation.TabIndex="11"
                         Command="{Binding NavigateCommand}" CommandParameter="SlopeSettings"/>
                 <Button Content="{loc:Loc Key='Nav_SlopeResults'}" Height="34" Margin="0,2" Padding="6"
+                        AutomationProperties.Name="{loc:Loc Key='Accessibility_NavSlopeResults'}" KeyboardNavigation.TabIndex="12"
                         Command="{Binding NavigateCommand}" CommandParameter="SlopeResult"/>
                 <Separator Margin="0,8"/>
                 <Button Content="{loc:Loc Key='Nav_SettlementSettings'}" Height="34" Margin="0,2" Padding="6"
+                        AutomationProperties.Name="{loc:Loc Key='Accessibility_NavSettlementSettings'}" KeyboardNavigation.TabIndex="13"
                         Command="{Binding NavigateCommand}" CommandParameter="SettlementSettings"/>
                 <Button Content="{loc:Loc Key='Nav_SettlementResults'}" Height="34" Margin="0,2" Padding="6"
+                        AutomationProperties.Name="{loc:Loc Key='Accessibility_NavSettlementResults'}" KeyboardNavigation.TabIndex="14"
                         Command="{Binding NavigateCommand}" CommandParameter="SettlementResult"/>
                 <Separator Margin="0,8"/>
                 <TextBlock Text="{Binding Project.ProjectName}" Margin="4,8,4,0" FontWeight="SemiBold"/>
