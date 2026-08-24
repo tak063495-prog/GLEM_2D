@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using GLEM.App.Localization;
 using GLEM.Core.Models;
 using GLEM.Core.Validation;
 
@@ -90,7 +91,7 @@ public sealed partial class LayerRow : ObservableObject
             if (!issue.IsWarning && IsLayerField(issue.FieldName))
             {
                 fields.Add(issue.FieldName);
-                messages.Add($"[{issue.Code}] {issue.Message}");
+                messages.Add($"[{issue.Code}] {ValidationLocalizer.GetMessage(issue)}");
             }
         }
 

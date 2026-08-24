@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GLEM.App.Localization;
 using GLEM.Core;
 using GLEM.Core.IO;
 using GLEM.Core.Models;
@@ -58,7 +59,7 @@ public sealed partial class MainViewModel : ObservableObject
     private Screen activeScreen = Screen.GroundModel;
 
     [ObservableProperty]
-    private string statusText = "Ready";
+    private string statusText = LocalizationService.GetString("Status_Ready");
 
     [ObservableProperty]
     private bool hasPendingAutosave;
@@ -78,7 +79,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     public void UpdateValidationStatus()
     {
-        StatusText = GroundModelEditor.HasValidationErrors ? "Validation: failed" : "Validation: passed";
+        StatusText = GroundModelEditor.HasValidationErrors
+            ? LocalizationService.GetString("Validation_Failed")
+            : LocalizationService.GetString("Validation_Passed");
     }
 
     [RelayCommand]
@@ -91,7 +94,7 @@ public sealed partial class MainViewModel : ObservableObject
         SlopeAnalysis.Reset();
         Settlement.Reset();
         ActiveScreen = Screen.GroundModel;
-        StatusText = "New project";
+        StatusText = LocalizationService.GetString("Status_NewProject");
     }
 
     [RelayCommand]
@@ -108,10 +111,10 @@ public sealed partial class MainViewModel : ObservableObject
             SlopeAnalysis.LoadFrom(Project.SlopeAnalysis);
             Settlement.LoadFrom(Project.SettlementAnalysis);
             ActiveScreen = Screen.GroundModel;
-            StatusText = $"Opened {Path.GetFileName(path)}";
+            StatusText = LocalizationService.Format("Status_OpenedFormat", Path.GetFileName(path));
             return true;
         }
-        catch (GlemException ex) when (ex.Code == "GLEM-3001" && VersionMismatchConfirm is { } confirm && confirm(ex.Message))
+        catch (GlemException ex) when (ex.Code == "GLEM-3001" && VersionMismatchConfirm is { } confirm && confirm(ExceptionLocalizer.Format(ex)))
         {
             // R-3.1.5: ユーザーの確認後、新しいバージョンのファイルを読み込む
             try
@@ -123,18 +126,18 @@ public sealed partial class MainViewModel : ObservableObject
                 SlopeAnalysis.LoadFrom(Project.SlopeAnalysis);
                 Settlement.LoadFrom(Project.SettlementAnalysis);
                 ActiveScreen = Screen.GroundModel;
-                StatusText = $"Opened {Path.GetFileName(path)} (newer format version)";
+                StatusText = LocalizationService.Format("Status_OpenedNewerFormat", Path.GetFileName(path));
                 return true;
             }
             catch (GlemException ex2)
             {
-                StatusText = $"[{ex2.Code}] {ex2.Message}";
+                StatusText = ExceptionLocalizer.Format(ex2);
                 return false;
             }
         }
         catch (GlemException ex)
         {
-            StatusText = $"[{ex.Code}] {ex.Message}";
+            StatusText = ExceptionLocalizer.Format(ex);
             return false;
         }
     }
@@ -164,12 +167,12 @@ public sealed partial class MainViewModel : ObservableObject
             GlemProjectFile.Save(path, Project);
             CurrentFilePath = path;
             IsDirty = false;
-            StatusText = $"Saved {Path.GetFileName(path)}";
+            StatusText = LocalizationService.Format("Status_SavedFormat", Path.GetFileName(path));
             return true;
         }
         catch (Exception ex)
         {
-            StatusText = $"Save failed: {ex.Message}";
+            StatusText = LocalizationService.Format("Status_SaveFailedFormat", ex.Message);
             return false;
         }
     }
@@ -192,11 +195,12 @@ public sealed partial class MainViewModel : ObservableObject
             GroundModelEditor.ApplyTo(Project);
             Directory.CreateDirectory(Path.GetDirectoryName(AutosavePath)!);
             GlemProjectFile.Save(AutosavePath, Project);
-            StatusText = $"Autosaved {DateTime.Now:HH:mm:ss}";
+            // The time is formatted with the current culture via the {0:HH:mm:ss} format specifier.
+            StatusText = LocalizationService.Format("Status_AutosavedFormat", DateTime.Now);
         }
         catch (Exception ex)
         {
-            StatusText = $"Autosave failed: {ex.Message}";
+            StatusText = LocalizationService.Format("Status_AutosaveFailedFormat", ex.Message);
         }
     }
 
@@ -217,11 +221,11 @@ public sealed partial class MainViewModel : ObservableObject
             SlopeAnalysis.LoadFrom(Project.SlopeAnalysis);
             Settlement.LoadFrom(Project.SettlementAnalysis);
             HasPendingAutosave = false;
-            StatusText = "Restored from autosave";
+            StatusText = LocalizationService.GetString("Status_RestoredFromAutosave");
         }
         catch (GlemException ex)
         {
-            StatusText = $"[{ex.Code}] Autosave restore failed: {ex.Message}";
+            StatusText = LocalizationService.Format("Status_AutosaveRestoreFailedFormat", ex.Code, ExceptionLocalizer.GetMessage(ex));
         }
     }
 
@@ -247,7 +251,8 @@ public sealed partial class MainViewModel : ObservableObject
     private static ProjectData CreateNewProject() => new()
     {
         FormatVersion = "1.0",
-        ProjectName = "Untitled",
+        // User-visible defaults are localized; numeric defaults and FormatVersion stay stable.
+        ProjectName = LocalizationService.GetString("Default_ProjectName"),
         CreatedAt = DateTime.Now,
         GroundModel = new GroundModel
         {
@@ -256,14 +261,14 @@ public sealed partial class MainViewModel : ObservableObject
             {
                 new SoilLayer
                 {
-                    Name = "TopSoil",
+                    Name = LocalizationService.GetString("Default_Layer_TopSoil"),
                     ThicknessM = 3.0,
                     GammaKnm3 = 18.0,
                     FrictionAngleDeg = 32.0
                 },
                 new SoilLayer
                 {
-                    Name = "Clay",
+                    Name = LocalizationService.GetString("Default_Layer_Clay"),
                     ThicknessM = 7.0,
                     GammaKnm3 = 16.5,
                     CohesionKpa = 15.0,

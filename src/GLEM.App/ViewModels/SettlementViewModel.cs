@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GLEM.App.Localization;
 using GLEM.Core;
 using GLEM.Core.Engines;
 using GLEM.Core.IO;
@@ -93,14 +94,14 @@ public sealed partial class SettlementViewModel : ObservableObject
         var groundIssues = GroundModelValidator.Validate(gm);
         if (groundIssues.Any(i => !i.IsWarning))
         {
-            RunError = string.Join(" | ", groundIssues.Where(i => !i.IsWarning).Select(i => $"[{i.Code}] {i.Message}"));
+            RunError = string.Join(" | ", groundIssues.Where(i => !i.IsWarning).Select(ValidationLocalizer.FormatIssue));
             return;
         }
 
         var inputIssues = AnalysisInputValidator.ValidateSettlement(gm, input);
         if (inputIssues.Any(i => !i.IsWarning))
         {
-            RunError = string.Join(" | ", inputIssues.Where(i => !i.IsWarning).Select(i => $"[{i.Code}] {i.Message}"));
+            RunError = string.Join(" | ", inputIssues.Where(i => !i.IsWarning).Select(ValidationLocalizer.FormatIssue));
             return;
         }
 
@@ -115,7 +116,7 @@ public sealed partial class SettlementViewModel : ObservableObject
         }
         catch (GlemException ex)
         {
-            RunError = $"[{ex.Code}] {ex.Message}";
+            RunError = ExceptionLocalizer.Format(ex);
         }
         finally
         {
@@ -138,6 +139,6 @@ public sealed partial class SettlementViewModel : ObservableObject
     {
         Project = _main.Project,
         SettlementResult = Result,
-        Figures = stPlotPng is null ? new List<ReportFigure>() : new List<ReportFigure> { new("Settlement-time curve", stPlotPng) }
+        Figures = stPlotPng is null ? new List<ReportFigure>() : new List<ReportFigure> { new(LocalizationService.GetString("Report_FigureSettlementTimeCurve"), stPlotPng) }
     });
 }

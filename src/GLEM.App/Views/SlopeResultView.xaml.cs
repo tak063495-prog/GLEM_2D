@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using GLEM.App.Localization;
 using GLEM.App.Plots;
 using GLEM.App.ViewModels;
 using Microsoft.Win32;
@@ -62,14 +63,14 @@ public partial class SlopeResultView : UserControl
         var vm = Vm;
         if (vm?.Result is null)
         {
-            MessageBox.Show("No analysis result to export.", "GLEM", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(LocalizationService.GetString("SlopeResult_ExportCsvNoResultMessage"), "GLEM", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         var dialog = new SaveFileDialog
         {
-            Filter = "CSV file (*.csv)|*.csv|All files (*.*)|*.*",
-            Title = "Export Slice Results (CSV)",
+            Filter = LocalizationService.GetString("FileFilter_Csv"),
+            Title = LocalizationService.GetString("SlopeResult_ExportCsvDialogTitle"),
             FileName = "slope_result.csv"
         };
 
@@ -84,14 +85,14 @@ public partial class SlopeResultView : UserControl
         var vm = Vm;
         if (vm?.Result is null)
         {
-            MessageBox.Show("No analysis result to report.", "GLEM", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(LocalizationService.GetString("SlopeResult_ReportNoResultMessage"), "GLEM", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         var dialog = new SaveFileDialog
         {
-            Filter = "HTML report (*.html)|*.html|All files (*.*)|*.*",
-            Title = "Generate Report",
+            Filter = LocalizationService.GetString("FileFilter_Html"),
+            Title = LocalizationService.GetString("SlopeResult_GenerateReportDialogTitle"),
             FileName = "glem_report.html"
         };
 

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using GLEM.App.Localization;
 using GLEM.App.Plots;
 using GLEM.App.ViewModels;
 using GLEM.Core.Models;
@@ -82,7 +83,8 @@ public partial class SettlementResultView : UserControl
             }
         }
 
-        CursorReadout.Text = $"t = {nearest.TimeDays:F1} d   U = {nearest.UPercent:F1} %   S = {nearest.SettlementMm:F2} mm";
+        // 数値は CurrentCulture で整形される（リソース内の F 形式指定子が適用される）
+        CursorReadout.Text = LocalizationService.Format("SettlementResult_CursorReadoutFormat", nearest.TimeDays, nearest.UPercent, nearest.SettlementMm);
     }
 
     private byte[]? RenderPlotPng()
@@ -103,14 +105,14 @@ public partial class SettlementResultView : UserControl
         var vm = Vm;
         if (vm?.Result is null)
         {
-            MessageBox.Show("No analysis result to export.", "GLEM", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(LocalizationService.GetString("SlopeResult_ExportCsvNoResultMessage"), "GLEM", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         var dialog = new SaveFileDialog
         {
-            Filter = "CSV file (*.csv)|*.csv|All files (*.*)|*.*",
-            Title = "Export Settlement Time Series (CSV)",
+            Filter = LocalizationService.GetString("FileFilter_Csv"),
+            Title = LocalizationService.GetString("SettlementResult_ExportCsvDialogTitle"),
             FileName = "settlement_result.csv"
         };
 
@@ -125,14 +127,14 @@ public partial class SettlementResultView : UserControl
         var vm = Vm;
         if (vm?.Result is null)
         {
-            MessageBox.Show("No analysis result to report.", "GLEM", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(LocalizationService.GetString("SlopeResult_ReportNoResultMessage"), "GLEM", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         var dialog = new SaveFileDialog
         {
-            Filter = "HTML report (*.html)|*.html|All files (*.*)|*.*",
-            Title = "Generate Report",
+            Filter = LocalizationService.GetString("FileFilter_Html"),
+            Title = LocalizationService.GetString("SlopeResult_GenerateReportDialogTitle"),
             FileName = "glem_report.html"
         };
 

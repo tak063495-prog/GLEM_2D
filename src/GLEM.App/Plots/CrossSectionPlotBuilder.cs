@@ -1,3 +1,4 @@
+using GLEM.App.Localization;
 using GLEM.Core.Models;
 using ScottPlot;
 
@@ -81,10 +82,10 @@ public static class CrossSectionPlotBuilder
                 sliceLine.MarkerSize = 0f;
             }
 
-            // Annotations (R-6.1.2)
+            // Annotations (R-6.1.2): FS_min/R/center are engineering symbols; prose is localized, numbers use CurrentCulture
             plt.Add.Text($"FS_min = {result.MinFs:F3}", xMin + (xMax - xMin) * 0.02, zMax * 0.05);
             plt.Add.Text(
-                $"R = {circle.Radius:F1} m   center ({circle.CenterX:F1}, {circle.CenterZ:F1})",
+                LocalizationService.Format("CrossSection_CircleAnnotationFormat", circle.Radius, circle.CenterX, circle.CenterZ),
                 xMin + (xMax - xMin) * 0.02, zMax * 0.12);
         }
         else if (result.CriticalSurface is FunctionSurface function)
@@ -108,7 +109,7 @@ public static class CrossSectionPlotBuilder
             }
 
             plt.Add.Text($"FS_min = {result.MinFs:F3}", xMin + (xMax - xMin) * 0.02, zMax * 0.05);
-            plt.Add.Text($"{pts.Count} control points", xMin + (xMax - xMin) * 0.02, zMax * 0.12);
+            plt.Add.Text(LocalizationService.Format("CrossSection_ControlPointsAnnotationFormat", pts.Count), xMin + (xMax - xMin) * 0.02, zMax * 0.12);
         }
 
         plt.Axes.Bottom.Label.Text = "x [m]";

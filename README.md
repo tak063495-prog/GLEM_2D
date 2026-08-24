@@ -18,6 +18,13 @@ GLEM is a Windows desktop application for geotechnical slope stability and settl
 - `.glem` JSON project files with version checks and autosave recovery
 - CSV export and self-contained HTML reports with embedded plots
 - Input validation, progress reporting, cancellation, and WPF result plots
+- English and Japanese user interfaces, validation messages, plots, and HTML reports
+
+## Language
+
+GLEM follows the Windows display language by default: Japanese systems use Japanese, and other systems use English. To override it, select **Language > System default / English / Japanese** and restart GLEM. The preference is stored per user in `%LOCALAPPDATA%\GLEM\settings.json`.
+
+Project (`.glem`) and CSV data formats remain language-neutral and use stable invariant number formatting, so files can be exchanged between English and Japanese environments.
 
 ## Requirements
 
@@ -52,10 +59,10 @@ powershell -NoProfile -File scripts/coverage-gate.ps1 -CoverageXmlPath $xml.Full
 Run the packaging script from the repository root. The output is written to the ignored `artifacts/release/` directory.
 
 ```powershell
-pwsh -NoProfile -File scripts/package-release.ps1 -Version 1.0.0
+pwsh -NoProfile -File scripts/package-release.ps1
 ```
 
-The same packaging step runs automatically when a tag such as `v1.0.0` is pushed. The release workflow creates a GitHub Release and uploads the zip package.
+When `-Version` is omitted, the script reads the product version from `Directory.Build.props`. The same packaging step runs automatically when a tag such as `v1.1.0` is pushed. The release workflow expands the generated archive, runs `GLEM.exe --selftest`, creates a GitHub Release, and uploads the zip package.
 
 ## Architecture
 

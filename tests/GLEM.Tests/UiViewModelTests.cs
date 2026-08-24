@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.Input;
 using FluentAssertions;
@@ -16,6 +17,10 @@ public sealed class UiViewModelTests : IDisposable
     [Fact]
     public void C01_NewProject_HasTwoLayersAndValidationPasses()
     {
+        // The validation summary is localized; pin an explicit UI culture so the assertion below
+        // does not depend on the host's UI culture (e.g. ja-JP).
+        using var _ = new CultureScope(new CultureInfo("en-US"));
+
         var vm = new MainViewModel();
 
         vm.GroundModelEditor.Layers.Should().HaveCount(2);
@@ -151,6 +156,10 @@ public sealed class UiViewModelTests : IDisposable
     [Fact]
     public async Task C05_Cancel_StopsSearchAndClearsState()
     {
+        // ProgressText is localized ("Starting search..." / "Cancelled"); pin an explicit UI culture
+        // so the assertions below do not depend on the host's UI culture (e.g. ja-JP).
+        using var _ = new CultureScope(new CultureInfo("en-US"));
+
         var vm = new MainViewModel();
 
         // Wide range → many candidates, so the search runs long enough to be cancelled mid-flight

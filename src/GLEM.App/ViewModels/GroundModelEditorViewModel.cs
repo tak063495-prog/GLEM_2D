@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GLEM.App.Localization;
 using GLEM.Core.IO;
 using GLEM.Core.Models;
 using GLEM.Core.Validation;
@@ -67,7 +68,7 @@ public sealed partial class GroundModelEditorViewModel : ObservableObject
     {
         var layer = new SoilLayer
         {
-            Name = $"Layer{Layers.Count + 1}",
+            Name = LocalizationService.Format("Default_LayerNameFormat", Layers.Count + 1),
             ThicknessM = 2.0,
             GammaKnm3 = 18.0,
             FrictionAngleDeg = 30.0
@@ -133,16 +134,7 @@ public sealed partial class GroundModelEditorViewModel : ObservableObject
         HasWaterTableError = LastIssues.Any(i => !i.IsWarning && i.FieldName == "water_table_depth_m");
         HasValidationErrors = LastIssues.Any(i => !i.IsWarning);
 
-        if (LastIssues.Count == 0)
-        {
-            ValidationSummary = "✓ Passed: no validation issues";
-        }
-        else
-        {
-            var errors = LastIssues.Where(i => !i.IsWarning).Count();
-            var warnings = LastIssues.Count - errors;
-            ValidationSummary = $"✗ {errors} error(s), {warnings} warning(s): " + string.Join(" | ", LastIssues.Select(i => $"{(i.IsWarning ? "W" : "E")} [{i.Code}] {i.Message}"));
-        }
+        ValidationSummary = ValidationLocalizer.FormatSummary(LastIssues);
 
         _main.UpdateValidationStatus();
     }

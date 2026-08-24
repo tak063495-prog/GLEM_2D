@@ -1,3 +1,4 @@
+using System.Globalization;
 using FluentAssertions;
 using GLEM.Core;
 using GLEM.Core.IO;
@@ -100,6 +101,81 @@ public sealed class ProjectFileTests : IDisposable
         settlement.DrainageMode.Should().Be(Drainage.Double);
         settlement.DurationYears.Should().Be(25.0);
         settlement.OutputPointCount.Should().Be(100);
+    }
+
+    // P0 invariant-format regression: the .glem wire format must not follow a non-English comma-decimal culture.
+    [Fact]
+    public void T12_Save_UnderCommaDecimalCulture_KeepsAsciiPropertyNamesAndDotDecimals()
+    {
+        using var _ = new CultureScope(new CultureInfo("de-DE"));
+
+        var data = new ProjectData
+        {
+            FormatVersion = "1.0",
+            ProjectName = "InvariantFormat",
+            CreatedAt = new DateTime(2026, 8, 22, 9, 0, 0),
+            GroundModel = new GroundModel
+            {
+                WaterTableDepthM = 5.25,
+                Layers =
+                {
+                    new SoilLayer
+                    {
+                        Name = "Sand",
+                        ThicknessM = 3.75,
+                        GammaKnm3 = 18.0,
+                        CohesionKpa = 0.0,
+                        FrictionAngleDeg = 32.5,
+                        PermeabilityMs = 1e-4,
+                        InitialVoidRatio = 0.75,
+                        CompressionIndexCc = 0.25
+                    }
+                }
+            },
+            SlopeAnalysis = new SlopeAnalysisInput
+            {
+                Method = SlopeMethod.JanbuGeneralized,
+                SliceWidthM = 1.5,
+                Kh = 0.0725
+            },
+            SettlementAnalysis = new SettlementAnalysisInput
+            {
+                LoadKpa = 100.0,
+                DrainageMode = Drainage.Double,
+                DurationYears = 25.5
+            }
+        };
+
+        GlemProjectFile.Save(_path, data);
+        var raw = File.ReadAllText(_path);
+
+        // 安定した ASCII プロパティ名（snake_case）と列挙型のワイヤ値
+        raw.Should().Contain("\"format_version\"");
+        raw.Should().Contain("\"project_name\"");
+        raw.Should().Contain("\"ground_model\"");
+        raw.Should().Contain("\"water_table_depth_m\"");
+        raw.Should().Contain("\"thickness_m\"");
+        raw.Should().Contain("\"gamma_kn_m3\"");
+        raw.Should().Contain("\"c_kpa\"");
+        raw.Should().Contain("\"phi_deg\"");
+        raw.Should().Contain("\"method\": \"janbu_generalized\"");
+        raw.Should().Contain("\"drainage\": \"double\"");
+
+        // ドット小数のまま（de-DE の "0,0725" にならない）
+        raw.Should().Contain("5.25");
+        raw.Should().Contain("3.75");
+        raw.Should().Contain("0.0725");
+        raw.Should().NotContain(",0725");
+
+        // ラウンドトリップ: 値が保持されること
+        var loaded = GlemProjectFile.Load(_path);
+        loaded.ProjectName.Should().Be("InvariantFormat");
+        loaded.GroundModel.WaterTableDepthM.Should().Be(5.25);
+        loaded.GroundModel.Layers.Single().ThicknessM.Should().Be(3.75);
+        loaded.SlopeAnalysis!.Method.Should().Be(SlopeMethod.JanbuGeneralized);
+        loaded.SlopeAnalysis.Kh.Should().Be(0.0725);
+        loaded.SettlementAnalysis!.DrainageMode.Should().Be(Drainage.Double);
+        loaded.SettlementAnalysis.DurationYears.Should().Be(25.5);
     }
 
     [Fact]

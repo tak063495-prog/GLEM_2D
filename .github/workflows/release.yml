@@ -24,6 +24,32 @@ jobs:
         shell: pwsh
         run: pwsh -NoProfile -File scripts/package-release.ps1 -Version "${{ github.ref_name }}"
 
+      # Validate the archive contents (not only the package directory): expand each generated zip,
+      # locate GLEM.exe inside it, and run --selftest. Fail if the exe is missing or exits nonzero.
+      - name: Verify release archive (expand zip, run GLEM.exe --selftest)
+        shell: pwsh
+        run: |
+          $zips = Get-ChildItem -LiteralPath artifacts/release -Filter *.zip -File | Select-Object -ExpandProperty FullName
+          if (-not $zips) { throw "No release zip found in artifacts/release" }
+
+          foreach ($zip in $zips) {
+            $stage = Join-Path ([System.IO.Path]::GetTempPath()) ("glem-selftest-" + [guid]::NewGuid().ToString("N"))
+            New-Item -ItemType Directory -Path $stage | Out-Null
+            try {
+              Expand-Archive -LiteralPath $zip -DestinationPath $stage -Force
+
+              $exe = Get-ChildItem -LiteralPath $stage -Recurse -Filter GLEM.exe -File | Select-Object -First 1
+              if (-not $exe) { throw "GLEM.exe not found in expanded archive: $zip" }
+
+              # GLEM.exe is a GUI-subsystem executable; invoking it via "&" can leave $LASTEXITCODE null,
+              # so use Start-Process -Wait to reliably wait and read the process ExitCode.
+              $proc = Start-Process -FilePath $exe.FullName -ArgumentList "--selftest" -WindowStyle Hidden -Wait -PassThru
+              if ($proc.ExitCode -ne 0) { throw "GLEM.exe --selftest exited with code $($proc.ExitCode) (archive: $zip)" }
+            } finally {
+              Remove-Item -LiteralPath $stage -Recurse -Force
+            }
+          }
+
       - name: Create GitHub Release and upload zip
         shell: pwsh
         env:

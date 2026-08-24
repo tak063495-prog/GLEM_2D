@@ -1,0 +1,16 @@
+<Project>
+
+  <!--
+    Single source of truth for the GLEM product version.
+    ProductVersion is read by scripts/package-release.ps1 when no explicit -Version is passed,
+    and drives the assembly metadata below so all projects stay consistent.
+  -->
+  <PropertyGroup>
+    <ProductVersion>1.1.0</ProductVersion>
+    <Version>$(ProductVersion)</Version>
+    <AssemblyVersion>$(ProductVersion).0</AssemblyVersion>
+    <FileVersion>$(ProductVersion).0</FileVersion>
+    <InformationalVersion>$(ProductVersion)</InformationalVersion>
+  </PropertyGroup>
+
+</Project>

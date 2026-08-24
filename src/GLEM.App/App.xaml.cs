@@ -1,5 +1,7 @@
+using System.Globalization;
 using System.IO;
 using System.Windows;
+using GLEM.App.Localization;
 using GLEM.Core.Logging;
 using Microsoft.Extensions.Logging;
 
@@ -9,8 +11,15 @@ public partial class App : Application
 {
     public static ILoggerFactory LoggerFactory { get; private set; } = null!;
 
+    /// <summary>言語設定の永続化ストア（既定: %LOCALAPPDATA%\GLEM\settings.json）。一度だけ初期化する。</summary>
+    public static LanguageSettingsStore LanguageStore { get; } = new();
+
     protected override void OnStartup(StartupEventArgs e)
     {
+        // 言語設定は base.OnStartup より前に適用する（WPF の初期化前にカルチャを確定させるため）。
+        var systemUiCulture = CultureInfo.CurrentUICulture;
+        LocalizationService.Apply(LanguageStore.Load().Language, systemUiCulture);
+
         base.OnStartup(e);
 
         // 詳細設計書 §7: %LOCALAPPDATA%\GLEM\logs に出力、レベルは GLEM_LOG_LEVEL 環境変数で上書き可能

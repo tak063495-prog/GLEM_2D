@@ -1,7 +1,8 @@
 <UserControl x:Class="GLEM.App.Views.GroundModelEditorView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:conv="clr-namespace:GLEM.App.Converters">
+             xmlns:conv="clr-namespace:GLEM.App.Converters"
+             xmlns:loc="clr-namespace:GLEM.App.Localization">
     <UserControl.Resources>
         <conv:FieldInSetConverter x:Key="FieldInSet"/>
         <conv:BoolToBorderConverter x:Key="BoolToBorder"/>
@@ -36,16 +37,16 @@
     <DockPanel Margin="12">
         <!-- Groundwater level -->
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-            <TextBlock Text="Groundwater level depth [m]:" VerticalAlignment="Center"/>
+            <TextBlock Text="{loc:Loc Key='GroundModel_WaterTableLabel'}" VerticalAlignment="Center"/>
             <TextBox Width="80" Margin="8,0" Height="24" VerticalContentAlignment="Center"
                      Text="{Binding WaterTableDepthM, UpdateSourceTrigger=PropertyChanged}"
-                     ToolTip="Depth of the groundwater table below the ground surface [m]"
+                     ToolTip="{loc:Loc Key='GroundModel_WaterTableTooltip'}"
                      BorderBrush="{Binding HasWaterTableError, Converter={StaticResource BoolToBorder}}"/>
         </StackPanel>
 
         <!-- Validation result -->
         <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
-            <Button Content="Run Validation" Width="120" Height="30" DockPanel.Dock="Left"
+            <Button Content="{loc:Loc Key='GroundModel_RunValidationButton'}" Width="120" Height="30" DockPanel.Dock="Left"
                     Command="{Binding RunValidationCommand}"/>
             <TextBlock Text="{Binding ValidationSummary}" VerticalAlignment="Center" Margin="12,0,0,0"
                        TextWrapping="Wrap" Foreground="#B00020"/>
@@ -53,10 +54,10 @@
 
         <!-- Layer operations -->
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
-            <Button Content="+ Add Layer" Width="100" Height="28" Command="{Binding AddLayerCommand}"/>
-            <Button Content="- Remove Selected" Width="130" Height="28" Margin="6,0,0,0" Command="{Binding RemoveSelectedCommand}"/>
-            <Button Content="Up" Width="40" Height="28" Margin="6,0,0,0" Command="{Binding MoveUpCommand}"/>
-            <Button Content="Down" Width="50" Height="28" Margin="6,0,0,0" Command="{Binding MoveDownCommand}"/>
+            <Button Content="{loc:Loc Key='GroundModel_AddLayerButton'}" Width="100" Height="28" Command="{Binding AddLayerCommand}"/>
+            <Button Content="{loc:Loc Key='GroundModel_RemoveLayerButton'}" Width="130" Height="28" Margin="6,0,0,0" Command="{Binding RemoveSelectedCommand}"/>
+            <Button Content="{loc:Loc Key='GroundModel_MoveUpButton'}" Width="40" Height="28" Margin="6,0,0,0" Command="{Binding MoveUpCommand}"/>
+            <Button Content="{loc:Loc Key='GroundModel_MoveDownButton'}" Width="50" Height="28" Margin="6,0,0,0" Command="{Binding MoveDownCommand}"/>
         </StackPanel>
 
         <!-- Layer table -->
@@ -64,9 +65,9 @@
                   AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column"
                   CellStyle="{StaticResource ErrorCellStyle}" GridLinesVisibility="All">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="No." Binding="{Binding Index, Mode=OneTime}" Width="40"/>
-                <DataGridTextColumn Header="Layer Name" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="110"/>
-                <DataGridTextColumn Header="Thickness [m]" Binding="{Binding ThicknessM, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+                <DataGridTextColumn Header="{loc:Loc Key='GroundModel_ColumnNo'}" Binding="{Binding Index, Mode=OneTime}" Width="40"/>
+                <DataGridTextColumn Header="{loc:Loc Key='GroundModel_ColumnLayerName'}" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="110"/>
+                <DataGridTextColumn Header="{loc:Loc Key='GroundModel_ColumnThickness'}" Binding="{Binding ThicknessM, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
                 <DataGridTextColumn Header="&#373; [kN/m&#179;]" Binding="{Binding GammaKnm3, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
                 <DataGridTextColumn Header="c' [kPa]" Binding="{Binding CohesionKpa, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
                 <DataGridTextColumn Header="&#966;' [&#176;]" Binding="{Binding FrictionAngleDeg, UpdateSourceTrigger=PropertyChanged}" Width="80"/>

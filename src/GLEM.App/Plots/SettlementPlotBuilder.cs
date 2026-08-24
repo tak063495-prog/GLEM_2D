@@ -1,3 +1,5 @@
+using System.Globalization;
+using GLEM.App.Localization;
 using GLEM.Core.Models;
 using ScottPlot;
 using ScottPlot.TickGenerators;
@@ -23,10 +25,11 @@ public static class SettlementPlotBuilder
         var xMin = xs.Min();
         var xMax = xs.Max();
 
-        AddCurve(plt, "Total", xs, series.Select(p => p.SettlementMm).ToArray(), "#222222", 2f);
-        AddCurve(plt, "Immediate", xs, series.Select(p => p.ImmediateMm).ToArray(), "#E08A00", 1.5f);
-        AddCurve(plt, "Primary consolidation", xs, series.Select(p => p.PrimaryMm).ToArray(), "#1E6FD9", 1.5f);
-        AddCurve(plt, "Secondary compression", xs, series.Select(p => p.SecondaryMm).ToArray(), "#2E8B3A", 1.5f);
+        // Legend labels are localized prose (U/S/t symbols and units stay unchanged)
+        AddCurve(plt, LocalizationService.GetString("SettlementPlot_LegendTotal"), xs, series.Select(p => p.SettlementMm).ToArray(), "#222222", 2f);
+        AddCurve(plt, LocalizationService.GetString("SettlementPlot_LegendImmediate"), xs, series.Select(p => p.ImmediateMm).ToArray(), "#E08A00", 1.5f);
+        AddCurve(plt, LocalizationService.GetString("SettlementPlot_LegendPrimaryConsolidation"), xs, series.Select(p => p.PrimaryMm).ToArray(), "#1E6FD9", 1.5f);
+        AddCurve(plt, LocalizationService.GetString("SettlementPlot_LegendSecondaryCompression"), xs, series.Select(p => p.SecondaryMm).ToArray(), "#2E8B3A", 1.5f);
 
         // U=50% / U=90% dashed horizontal lines (fractions of total settlement)
         var u50 = plt.Add.Line(xMin, result.TotalMm * 0.5, xMax, result.TotalMm * 0.5);
@@ -39,18 +42,19 @@ public static class SettlementPlotBuilder
         u90.LinePattern = LinePattern.Dashed;
         u90.MarkerSize = 0f;
 
+        // U/T50/T90 are engineering symbols; the day unit and surrounding prose are localized, numbers use CurrentCulture
         if (result.T50Days is { } t50)
         {
-            plt.Add.Text($"U=50% (T50={t50:F0} d)", xMin + (xMax - xMin) * 0.4, result.TotalMm * 0.5);
+            plt.Add.Text(LocalizationService.Format("SettlementPlot_T50AnnotationFormat", t50), xMin + (xMax - xMin) * 0.4, result.TotalMm * 0.5);
         }
 
         if (result.T90Days is { } t90)
         {
-            plt.Add.Text($"U=90% (T90={t90:F0} d)", xMin + (xMax - xMin) * 0.4, result.TotalMm * 0.9);
+            plt.Add.Text(LocalizationService.Format("SettlementPlot_T90AnnotationFormat", t90), xMin + (xMax - xMin) * 0.4, result.TotalMm * 0.9);
         }
 
-        plt.Axes.Bottom.Label.Text = logX ? "time [day] (log scale)" : "time [day]";
-        plt.Axes.Left.Label.Text = "settlement [mm]";
+        plt.Axes.Bottom.Label.Text = logX ? LocalizationService.GetString("SettlementPlot_TimeAxisLabelLog") : LocalizationService.GetString("Unit_TimeDay");
+        plt.Axes.Left.Label.Text = LocalizationService.GetString("SettlementPlot_SettlementAxisLabel");
 
         if (logX)
         {
@@ -63,7 +67,8 @@ public static class SettlementPlotBuilder
                 if (v >= xMin * 0.99 && v <= xMax * 1.01)
                 {
                     positions.Add(e);
-                    labels.Add(v.ToString("0.##"));
+                    // Manual tick labels are display-only strings; keep them culture-safe via CurrentCulture
+                    labels.Add(v.ToString("0.##", CultureInfo.CurrentCulture));
                 }
             }
 

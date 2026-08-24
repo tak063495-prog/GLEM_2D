@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using GLEM.App.Localization;
 using GLEM.Core;
 using GLEM.Core.Engines;
 using GLEM.Core.IO;
@@ -223,19 +224,19 @@ public sealed partial class SlopeAnalysisViewModel : ObservableObject
         var groundIssues = GroundModelValidator.Validate(gm);
         if (groundIssues.Any(i => !i.IsWarning))
         {
-            RunError = string.Join(" | ", groundIssues.Where(i => !i.IsWarning).Select(i => $"[{i.Code}] {i.Message}"));
+            RunError = string.Join(" | ", groundIssues.Where(i => !i.IsWarning).Select(ValidationLocalizer.FormatIssue));
             return;
         }
 
         var inputIssues = AnalysisInputValidator.ValidateSlope(gm, input);
         if (inputIssues.Any(i => !i.IsWarning))
         {
-            RunError = string.Join(" | ", inputIssues.Where(i => !i.IsWarning).Select(i => $"[{i.Code}] {i.Message}"));
+            RunError = string.Join(" | ", inputIssues.Where(i => !i.IsWarning).Select(ValidationLocalizer.FormatIssue));
             return;
         }
 
         var warnings = groundIssues.Concat(inputIssues).Where(i => i.IsWarning).ToList();
-        if (warnings.Count > 0 && WarningConfirm is { } confirm && !confirm(string.Join("\n", warnings.Select(w => $"[{w.Code}] {w.Message}"))))
+        if (warnings.Count > 0 && WarningConfirm is { } confirm && !confirm(string.Join("\n", warnings.Select(ValidationLocalizer.FormatIssue))))
         {
             return;
         }
@@ -244,14 +245,14 @@ public sealed partial class SlopeAnalysisViewModel : ObservableObject
         Result = null;
         RunError = null;
         ProgressFraction = 0.0;
-        ProgressText = "Starting search...";
+        ProgressText = LocalizationService.GetString("SlopeAnalysis_ProgressStarting");
         LastGroundModel = gm;
         _cts = new CancellationTokenSource();
 
         var progress = new Progress<SearchProgress>(p =>
         {
             ProgressFraction = p.FractionComplete;
-            ProgressText = $"Candidate {p.CandidateIndex}/{p.TotalCandidates}";
+            ProgressText = LocalizationService.Format("SlopeAnalysis_ProgressCandidateFormat", p.CandidateIndex, p.TotalCandidates);
         });
 
         try
@@ -273,11 +274,11 @@ public sealed partial class SlopeAnalysisViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            ProgressText = "Cancelled";
+            ProgressText = LocalizationService.GetString("SlopeAnalysis_Cancelled");
         }
         catch (GlemException ex)
         {
-            RunError = $"[{ex.Code}] {ex.Message}";
+            RunError = ExceptionLocalizer.Format(ex);
         }
         finally
         {
@@ -323,6 +324,6 @@ public sealed partial class SlopeAnalysisViewModel : ObservableObject
     {
         Project = _main.Project,
         SlopeResult = Result,
-        Figures = crossSectionPng is null ? new List<ReportFigure>() : new List<ReportFigure> { new("Cross section", crossSectionPng) }
+        Figures = crossSectionPng is null ? new List<ReportFigure>() : new List<ReportFigure> { new(LocalizationService.GetString("Report_FigureCrossSection"), crossSectionPng) }
     });
 }

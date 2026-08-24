@@ -23,6 +23,13 @@ English version: [README.md](README.md)
 - ruまたは地下水位線による間隙水圧、載荷、擬静力学的地震係数
 - 即時沈下・一次圧密・二次圧縮を含む一次元沈下予測
 - `.glem`プロジェクトファイル、自動保存・復元、CSV/HTMLレポート出力
+- 日本語・英語のUI、検証メッセージ、グラフ、HTMLレポート
+
+## 表示言語
+
+既定ではWindowsの表示言語に従い、日本語環境では日本語、それ以外の環境では英語を使用します。明示的に切り替える場合は、メニューの **言語 > システム既定 / 英語 / 日本語** を選択してGLEMを再起動してください。設定はユーザーごとの `%LOCALAPPDATA%\GLEM\settings.json` に保存されます。
+
+プロジェクト（`.glem`）とCSVのデータ形式は表示言語に依存せず、数値も常に一定の形式で保存されるため、英語環境と日本語環境の間で交換できます。
 
 ## 開発環境の前提
 
@@ -50,10 +57,10 @@ powershell -NoProfile -File scripts/coverage-gate.ps1 -CoverageXmlPath $xml.Full
 自己完結型Windows x64配布物は次のコマンドで生成できます。出力先はGit管理対象外の `artifacts/release/` です。
 
 ```powershell
-pwsh -NoProfile -File scripts/package-release.ps1 -Version 1.0.0
+pwsh -NoProfile -File scripts/package-release.ps1
 ```
 
-タグ `v1.0.0` をpushすると、GitHub Actionsがzipを生成してReleaseへアップロードします。
+`-Version` を省略すると、`Directory.Build.props` の製品バージョンを使用します。タグ `v1.1.0` をpushすると、GitHub Actionsがzipを生成し、展開後の `GLEM.exe --selftest` に成功した場合だけReleaseへアップロードします。
 
 ## 免責事項
 

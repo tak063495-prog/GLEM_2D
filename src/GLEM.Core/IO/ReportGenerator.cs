@@ -15,10 +15,13 @@ public static class ReportGenerator
 
     public static string Generate(ReportContent content)
     {
+        var t = content.Language == ReportLanguage.Japanese ? ReportText.Japanese : ReportText.English;
+
         var sb = new StringBuilder();
         sb.AppendLine("<!DOCTYPE html>");
-        sb.AppendLine("<html lang=\"ja\"><head><meta charset=\"utf-8\">");
-        sb.Append("<title>GLEM Report - ").Append(Esc(content.Project?.ProjectName ?? "Untitled")).AppendLine("</title>");
+        sb.Append("<html lang=\"").Append(t.HtmlLang).AppendLine("\"><head><meta charset=\"utf-8\">");
+        var projectName = content.Project?.ProjectName ?? t.Untitled;
+        sb.Append("<title>").Append(string.Format(Invariant, t.TitleFormat, Esc(projectName))).AppendLine("</title>");
         sb.AppendLine("""
             <style>
             body{font-family:'Segoe UI',sans-serif;margin:24px;color:#222}
@@ -35,11 +38,11 @@ public static class ReportGenerator
         sb.AppendLine("</head><body>");
 
         // ヘッダ（バージョン情報・生成日時）
-        sb.Append("<h1>GLEM Analysis Report</h1>\n<p class=\"meta\">Version: ").Append(Esc(content.AppVersion));
-        sb.Append(" &nbsp;|&nbsp; Generated at: ").Append(content.GeneratedAt.ToString("yyyy-MM-dd HH:mm:ss", Invariant));
+        sb.Append("<h1>").Append(t.H1Title).AppendLine("</h1>\n<p class=\"meta\">").Append(t.VersionLabel).Append(" ").Append(Esc(content.AppVersion));
+        sb.Append(" &nbsp;|&nbsp; ").Append(t.GeneratedAtLabel).Append(" ").Append(content.GeneratedAt.ToString("yyyy-MM-dd HH:mm:ss", Invariant));
         if (content.Project is { } p)
         {
-            sb.Append(" &nbsp;|&nbsp; Project: ").Append(Esc(p.ProjectName));
+            sb.Append(" &nbsp;|&nbsp; ").Append(t.ProjectLabel).Append(" ").Append(Esc(p.ProjectName));
         }
 
         sb.AppendLine("</p>");
@@ -47,19 +50,19 @@ public static class ReportGenerator
         // 入力概要
         if (content.Project is { } proj)
         {
-            AppendInputSummary(sb, proj);
+            AppendInputSummary(sb, proj, t);
         }
 
         // 斜面安定結果
         if (content.SlopeResult is { } slope)
         {
-            AppendSlopeResults(sb, slope);
+            AppendSlopeResults(sb, slope, t);
         }
 
         // 沈下解析結果
         if (content.SettlementResult is { } settlement)
         {
-            AppendSettlementResults(sb, settlement);
+            AppendSettlementResults(sb, settlement, t);
         }
 
         // 図面
@@ -81,17 +84,17 @@ public static class ReportGenerator
     public static void Save(string path, ReportContent content) =>
         File.WriteAllText(path, Generate(content), new UTF8Encoding(false));
 
-    private static void AppendInputSummary(StringBuilder sb, ProjectData p)
+    private static void AppendInputSummary(StringBuilder sb, ProjectData p, ReportText t)
     {
-        sb.AppendLine("<h2>1. Input Summary</h2>");
+        sb.Append("<h2>").Append(t.InputSummaryHeading).AppendLine("</h2>");
         if (p.CreatedAt is { } created)
         {
-            sb.Append("<p class=\"meta\">Created: ").Append(created.ToString("yyyy-MM-dd HH:mm:ss", Invariant)).AppendLine("</p>");
+            sb.Append("<p class=\"meta\">").Append(t.CreatedLabel).Append(" ").Append(created.ToString("yyyy-MM-dd HH:mm:ss", Invariant)).AppendLine("</p>");
         }
 
         var gm = p.GroundModel;
-        sb.Append("<p>Water table depth: <b>").Append(Fmt(gm.WaterTableDepthM)).Append(" m</b></p>\n");
-        sb.AppendLine("<table><tr><th>Layer</th><th>Thickness [m]</th><th>&gamma; [kN/m&sup3;]</th><th>c&#8242; [kPa]</th><th>&phi;&#8242; [&deg;]</th><th>k [m/s]</th><th>e0</th><th>Cc</th><th>Cr</th><th>Cs</th></tr>");
+        sb.Append("<p>").Append(t.WaterTableDepthLabel).Append(" <b>").Append(Fmt(gm.WaterTableDepthM)).Append(" m</b></p>\n");
+        sb.AppendLine("<table><tr><th>" + t.ThLayer + "</th><th>" + t.ThThickness + "</th><th>&gamma; [kN/m&sup3;]</th><th>c&#8242; [kPa]</th><th>&phi;&#8242; [&deg;]</th><th>k [m/s]</th><th>e0</th><th>Cc</th><th>Cr</th><th>Cs</th></tr>");
         foreach (var l in gm.Layers)
         {
             sb.Append("<tr><td>").Append(Esc(l.Name))
@@ -111,19 +114,19 @@ public static class ReportGenerator
 
         if (p.SlopeAnalysis is { } sa)
         {
-            sb.Append("<h3>Slope stability settings</h3>\n<p>Method: <b>").Append(Esc(sa.Method.ToString()))
-              .Append(" &nbsp;|&nbsp; Slice width: ").Append(Fmt(sa.SliceWidthM)).Append(" m")
-              .Append(" &nbsp;|&nbsp; Surcharge q: ").Append(Fmt(sa.SurchargeKpa)).Append(" kPa");
+            sb.Append("<h3>").Append(t.SlopeSettingsHeading).Append("</h3>\n<p>").Append(t.MethodLabel).Append(" <b>").Append(Esc(t.SlopeMethodDisplay(sa.Method)))
+              .Append("</b> &nbsp;|&nbsp; ").Append(t.SliceWidthLabel).Append(" ").Append(Fmt(sa.SliceWidthM)).Append(" m")
+              .Append(" &nbsp;|&nbsp; ").Append(t.SurchargeLabel).Append(" ").Append(Fmt(sa.SurchargeKpa)).Append(" kPa");
             if (sa.SurchargeStartX is { } xs && sa.SurchargeEndX is { } xe)
             {
-                sb.Append(" (x = ").Append(Fmt(xs)).Append(" to ").Append(Fmt(xe)).Append(" m)");
+                sb.Append(" ").Append(string.Format(Invariant, t.SurchargeRangeFormat, Fmt(xs), Fmt(xe)));
             }
 
-            sb.Append(" &nbsp;|&nbsp; kh: ").Append(Fmt(sa.Kh))
-              .Append(" &nbsp;|&nbsp; kv: ").Append(Fmt(sa.Kv));
+            sb.Append(" &nbsp;|&nbsp; ").Append(t.KhLabel).Append(" ").Append(Fmt(sa.Kh))
+              .Append(" &nbsp;|&nbsp; ").Append(t.KvLabel).Append(" ").Append(Fmt(sa.Kv));
             if (sa.SearchRange is { } sr)
             {
-                sb.Append("<br>Search range: cx [").Append(Fmt(sr.CenterXMin)).Append(", ").Append(Fmt(sr.CenterXMax))
+                sb.Append("<br>").Append(t.SearchRangeLabel).Append(" cx [").Append(Fmt(sr.CenterXMin)).Append(", ").Append(Fmt(sr.CenterXMax))
                   .Append("], cz [").Append(Fmt(sr.CenterZMin)).Append(", ").Append(Fmt(sr.CenterZMax))
                   .Append("], R [").Append(Fmt(sr.RadiusMin)).Append(", ").Append(Fmt(sr.RadiusMax)).Append("]");
             }
@@ -133,35 +136,34 @@ public static class ReportGenerator
 
         if (p.SettlementAnalysis is { } st)
         {
-            sb.Append("<h3>Settlement settings</h3>\n<p>Load: <b>").Append(Fmt(st.LoadKpa)).Append(" kPa")
-              .Append(" &nbsp;|&nbsp; Loaded area B&#215;L: ").Append(Fmt(st.LoadedAreaB)).Append(" &#215; ").Append(Fmt(st.LoadedAreaL)).Append(" m")
-              .Append(" &nbsp;|&nbsp; Drainage: ").Append(Esc(st.DrainageMode.ToString()))
-              .Append(" &nbsp;|&nbsp; Duration: ").Append(Fmt(st.DurationYears)).Append(" years")
-              .Append(" &nbsp;|&nbsp; Output points: ").Append(st.OutputPointCount)
+            sb.Append("<h3>").Append(t.SettlementSettingsHeading).Append("</h3>\n<p>").Append(t.LoadLabel).Append(" <b>").Append(Fmt(st.LoadKpa)).Append(" kPa")
+              .Append("</b> &nbsp;|&nbsp; ").Append(t.LoadedAreaLabel).Append(" ").Append(Fmt(st.LoadedAreaB)).Append(" &#215; ").Append(Fmt(st.LoadedAreaL)).Append(" m")
+              .Append(" &nbsp;|&nbsp; ").Append(t.DrainageLabel).Append(" ").Append(Esc(t.DrainageDisplay(st.DrainageMode)))
+              .Append(" &nbsp;|&nbsp; ").Append(t.DurationLabel).Append(" ").Append(Fmt(st.DurationYears)).Append(" ").Append(t.YearsUnit)
+              .Append(" &nbsp;|&nbsp; ").Append(t.OutputPointsLabel).Append(" ").Append(st.OutputPointCount)
               .AppendLine("</p>");
         }
     }
 
-    private static void AppendSlopeResults(StringBuilder sb, SlopeAnalysisResult r)
+    private static void AppendSlopeResults(StringBuilder sb, SlopeAnalysisResult r, ReportText t)
     {
-        sb.Append("<h2>2. Slope Stability Results</h2>\n<p>Minimum safety factor FS = <b>")
+        sb.Append("<h2>").Append(t.SlopeResultsHeading).Append("</h2>\n<p>").Append(t.MinFsPhrase).Append("<b>")
           .Append(Fmt(r.MinFs))
-          .Append("</b> &nbsp;|&nbsp; Method: ").Append(Esc(r.Method.ToString()))
-          .Append(" &nbsp;|&nbsp; Converged: ").Append(r.Converged ? "yes" : "no")
-          .Append(" (").Append(r.Iterations).Append(" iterations)</p>\n");
+          .Append("</b> &nbsp;|&nbsp; ").Append(t.MethodLabel).Append(" ").Append(Esc(t.SlopeMethodDisplay(r.Method)))
+          .Append(" &nbsp;|&nbsp; ").Append(t.ConvergedLabel).Append(" ").Append(r.Converged ? t.YesWord : t.NoWord)
+          .Append(" ").Append(string.Format(Invariant, t.IterationsFormat, r.Iterations)).Append("</p>\n");
 
         switch (r.CriticalSurface)
         {
             case CircleSurface c:
-                sb.Append("<p>Critical surface (circle): R = ").Append(Fmt(c.Radius)).Append(" m, center (")
-                  .Append(Fmt(c.CenterX)).Append(", ").Append(Fmt(c.CenterZ)).Append(")</p>\n");
+                sb.Append("<p>").Append(string.Format(Invariant, t.CircleSurfaceFormat, Fmt(c.Radius), Fmt(c.CenterX), Fmt(c.CenterZ))).AppendLine("</p>");
                 break;
             case FunctionSurface f:
-                sb.Append("<p>Critical surface (function): ").Append(f.ControlPoints.Count).Append(" control points</p>\n");
+                sb.Append("<p>").Append(string.Format(Invariant, t.FunctionSurfaceFormat, f.ControlPoints.Count)).AppendLine("</p>");
                 break;
         }
 
-        sb.AppendLine("<table><tr><th>slice_no</th><th>x [m]</th><th>z [m]</th><th>W [kN/m]</th><th>&alpha; [&deg;]</th><th>u [kPa]</th><th>N&#8242;p [kN/m]</th><th>c term [kN/m]</th><th>&phi; term [kN/m]</th></tr>");
+        sb.AppendLine("<table><tr><th>" + t.ThSliceNo + "</th><th>x [m]</th><th>z [m]</th><th>W [kN/m]</th><th>&alpha; [&deg;]</th><th>u [kPa]</th><th>N&#8242;p [kN/m]</th><th>" + t.ThCTerm + "</th><th>" + t.ThPhiTerm + "</th></tr>");
         foreach (var s in r.Slices)
         {
             sb.Append("<tr><td>").Append(s.SliceNo)
@@ -179,16 +181,21 @@ public static class ReportGenerator
         sb.AppendLine("</table>");
     }
 
-    private static void AppendSettlementResults(StringBuilder sb, SettlementAnalysisResult r)
+    private static void AppendSettlementResults(StringBuilder sb, SettlementAnalysisResult r, ReportText t)
     {
-        sb.Append("<h2>3. Settlement Results</h2>\n<p>Total settlement: <b>").Append(Fmt(r.TotalMm)).Append(" mm")
-          .Append("</b> &nbsp;|&nbsp; Immediate: ").Append(Fmt(r.ImmediateMm))
-          .Append(" mm &nbsp;|&nbsp; Primary consolidation: ").Append(Fmt(r.PrimaryMm))
-          .Append(" mm &nbsp;|&nbsp; Secondary compression: ").Append(Fmt(r.SecondaryMm)).Append(" mm</p>\n");
+        sb.Append("<h2>").Append(t.SettlementResultsHeading).Append("</h2>\n<p>").Append(t.TotalSettlementLabel).Append(" <b>")
+          .Append(Fmt(r.TotalMm)).Append(" mm")
+          .Append("</b> &nbsp;|&nbsp; ").Append(t.ImmediateLabel).Append(" ")
+          .Append(Fmt(r.ImmediateMm))
+          .Append(" mm &nbsp;|&nbsp; ").Append(t.PrimaryConsolidationLabel).Append(" ")
+          .Append(Fmt(r.PrimaryMm))
+          .Append(" mm &nbsp;|&nbsp; ").Append(t.SecondaryCompressionLabel).Append(" ")
+          .Append(Fmt(r.SecondaryMm)).Append(" mm</p>\n");
 
-        sb.Append("<p>T50 = ").Append(Num(r.T50Days)).Append(" days &nbsp;|&nbsp; T90 = ").Append(Num(r.T90Days)).AppendLine(" days</p>");
+        sb.Append("<p>T50 = ").Append(Num(r.T50Days)).Append(" ").Append(t.DaysUnit)
+          .Append(" &nbsp;|&nbsp; T90 = ").Append(Num(r.T90Days)).Append(" ").AppendLine(t.DaysUnit + "</p>");
 
-        sb.AppendLine("<table><tr><th>time [day]</th><th>U [%]</th><th>S [mm]</th></tr>");
+        sb.AppendLine("<table><tr><th>" + t.ThTime + "</th><th>U [%]</th><th>S [mm]</th></tr>");
         foreach (var p in r.TimeSeries)
         {
             sb.Append("<tr><td>").Append(Fmt(p.TimeDays))
@@ -209,9 +216,15 @@ public static class ReportGenerator
 
 public sealed class ReportContent
 {
-    public string AppVersion { get; init; } = "1.0.0";
+    public string AppVersion { get; init; } = GlemVersion.Current;
 
     public DateTime GeneratedAt { get; init; } = DateTime.Now;
+
+    /// <summary>
+    /// レポート本文の表示言語。明示的に指定しない場合は、生成時点の
+    /// <see cref="CultureInfo.CurrentUICulture"/> から解決する（2文字言語コードが "ja" の場合のみ日本語、それ以外は英語）。
+    /// </summary>
+    public ReportLanguage Language { get; init; } = ResolveDefaultLanguage();
 
     public ProjectData? Project { get; init; }
 
@@ -220,4 +233,10 @@ public sealed class ReportContent
     public SettlementAnalysisResult? SettlementResult { get; init; }
 
     public List<ReportFigure> Figures { get; init; } = new();
+
+    private static ReportLanguage ResolveDefaultLanguage()
+    {
+        var twoLetter = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        return string.Equals(twoLetter, "ja", StringComparison.OrdinalIgnoreCase) ? ReportLanguage.Japanese : ReportLanguage.English;
+    }
 }

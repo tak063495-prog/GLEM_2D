@@ -1,0 +1,618 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Status_Ready" xml:space="preserve">
+    <value>準備完了</value>
+  </data>
+  <data name="Menu_Language" xml:space="preserve">
+    <value>言語(_L)</value>
+  </data>
+  <data name="Menu_LanguageSystem" xml:space="preserve">
+    <value>システム既定(_S)</value>
+  </data>
+  <data name="Menu_LanguageEnglish" xml:space="preserve">
+    <value>英語(_E)</value>
+  </data>
+  <data name="Menu_LanguageJapanese" xml:space="preserve">
+    <value>日本語(_J)</value>
+  </data>
+  <data name="Dialog_RestartRequiredTitle" xml:space="preserve">
+    <value>GLEM - 言語</value>
+  </data>
+  <data name="Dialog_RestartRequiredMessage" xml:space="preserve">
+    <value>言語設定を保存しました。適用するにはGLEMを再起動してください。</value>
+  </data>
+  <data name="Validation_Passed" xml:space="preserve">
+    <value>検証：合格</value>
+  </data>
+  <data name="Validation_Failed" xml:space="preserve">
+    <value>検証：不合格</value>
+  </data>
+  <data name="Status_NewProject" xml:space="preserve">
+    <value>新規プロジェクト</value>
+  </data>
+  <data name="Status_OpenedFormat" xml:space="preserve">
+    <value>{0} を開きました</value>
+  </data>
+  <data name="Status_OpenedNewerFormat" xml:space="preserve">
+    <value>{0} を開きました（新しいフォーマットバージョン）</value>
+  </data>
+  <data name="Status_SavedFormat" xml:space="preserve">
+    <value>{0} を保存しました</value>
+  </data>
+  <data name="Status_SaveFailedFormat" xml:space="preserve">
+    <value>保存に失敗しました：{0}</value>
+  </data>
+  <data name="Status_AutosavedFormat" xml:space="preserve">
+    <value>{0:HH:mm:ss} に自動保存しました</value>
+  </data>
+  <data name="Status_AutosaveFailedFormat" xml:space="preserve">
+    <value>自動保存に失敗しました：{0}</value>
+  </data>
+  <data name="Status_RestoredFromAutosave" xml:space="preserve">
+    <value>自動保存から復元しました</value>
+  </data>
+  <data name="Status_AutosaveRestoreFailedFormat" xml:space="preserve">
+    <value>[{0}] 自動保存の復元に失敗しました：{1}</value>
+  </data>
+  <data name="SlopeMethod_Fellenius" xml:space="preserve">
+    <value>フェレニウス法</value>
+  </data>
+  <data name="SlopeMethod_BishopSimplified" xml:space="preserve">
+    <value>簡易ビショップ法</value>
+  </data>
+  <data name="SlopeMethod_JanbuGeneralized" xml:space="preserve">
+    <value>一般化ヤンブ法</value>
+  </data>
+  <data name="Drainage_Single" xml:space="preserve">
+    <value>片面排水</value>
+  </data>
+  <data name="Drainage_Double" xml:space="preserve">
+    <value>両面排水</value>
+  </data>
+  <data name="Menu_File" xml:space="preserve">
+    <value>ファイル(_F)</value>
+  </data>
+  <data name="Menu_New" xml:space="preserve">
+    <value>新規(_N)</value>
+  </data>
+  <data name="Menu_Open" xml:space="preserve">
+    <value>開く(_O)...</value>
+  </data>
+  <data name="Menu_Save" xml:space="preserve">
+    <value>保存(_S)</value>
+  </data>
+  <data name="Menu_SaveAs" xml:space="preserve">
+    <value>名前を付けて保存(_A)...</value>
+  </data>
+  <data name="Menu_Help" xml:space="preserve">
+    <value>ヘルプ(_H)</value>
+  </data>
+  <data name="Menu_About" xml:space="preserve">
+    <value>GLEM について(_A)</value>
+  </data>
+  <data name="Nav_GroundModel" xml:space="preserve">
+    <value>地盤モデル (S-2)</value>
+  </data>
+  <data name="Nav_SlopeSettings" xml:space="preserve">
+    <value>斜面 - 設定 (S-3)</value>
+  </data>
+  <data name="Nav_SlopeResults" xml:space="preserve">
+    <value>斜面 - 結果 (S-4)</value>
+  </data>
+  <data name="Nav_SettlementSettings" xml:space="preserve">
+    <value>沈下 - 設定 (S-5)</value>
+  </data>
+  <data name="Nav_SettlementResults" xml:space="preserve">
+    <value>沈下 - 結果 (S-6)</value>
+  </data>
+  <data name="Nav_Unsaved" xml:space="preserve">
+    <value>(未保存)</value>
+  </data>
+  <data name="Dialog_FileVersionTitle" xml:space="preserve">
+    <value>GLEM - ファイルのバージョン</value>
+  </data>
+  <data name="Dialog_AutosaveRestoreMessage" xml:space="preserve">
+    <value>前回の異常終了時に作成された自動保存コピーが見つかりました。
+復元しますか？</value>
+  </data>
+  <data name="Dialog_AutosaveRestoreTitle" xml:space="preserve">
+    <value>GLEM - オートセーブの復元</value>
+  </data>
+  <data name="FileFilter_Glem" xml:space="preserve">
+    <value>GLEM プロジェクト (*.glem)|*.glem|すべてのファイル (*.*)|*.*</value>
+  </data>
+  <data name="Dialog_OpenProjectTitle" xml:space="preserve">
+    <value>GLEM プロジェクトを開く</value>
+  </data>
+  <data name="Dialog_SaveProjectAsTitle" xml:space="preserve">
+    <value>GLEM プロジェクトを名前を付けて保存</value>
+  </data>
+  <data name="Dialog_LanguageSaveFailedFormat" xml:space="preserve">
+    <value>言語設定の保存に失敗しました：{0}</value>
+  </data>
+  <data name="About_Title" xml:space="preserve">
+    <value>GLEM について</value>
+  </data>
+  <data name="About_BodyFormat" xml:space="preserve">
+    <value>GLEM - 一般化極限平衡法
+斜面安定解析・沈下予測
+バージョン {0}</value>
+  </data>
+  <data name="Validation_NoIssues" xml:space="preserve">
+    <value>✓ 合格：検証上の問題はありません</value>
+  </data>
+  <data name="Validation_SummaryFormat" xml:space="preserve">
+    <value>✗ エラー {0} 件、警告 {1} 件：{2}</value>
+  </data>
+  <data name="Validation_ErrorMarker" xml:space="preserve">
+    <value>エラー</value>
+  </data>
+  <data name="Validation_WarningMarker" xml:space="preserve">
+    <value>警告</value>
+  </data>
+  <data name="ValidationIssue_GLEM1001_Layers" xml:space="preserve">
+    <value>地盤層が定義されていません。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1002_Thickness" xml:space="preserve">
+    <value>地盤層の厚さは、0 より大きい値で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1003_FrictionAngle" xml:space="preserve">
+    <value>有効摩擦角は、0〜45 度の範囲で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1004_UnitWeight" xml:space="preserve">
+    <value>単位重量は、5〜30 kN/m³ の範囲で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1004_Cohesion" xml:space="preserve">
+    <value>有効粘着力は、0〜500 kPa の範囲で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1004_RuRatio" xml:space="preserve">
+    <value>過剰間隙水圧比（ru）は、0 以上 1 未満の範囲で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1004_SliceWidth" xml:space="preserve">
+    <value>スライス幅は、0.5〜2.0 m の範囲で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1004_Kh" xml:space="preserve">
+    <value>擬静力係数 kh は、0〜0.3 の範囲で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1004_Kv" xml:space="preserve">
+    <value>擬静力係数 kv は、0〜0.3 の範囲で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1004_CoarseGrid" xml:space="preserve">
+    <value>粗グリッド間隔は、1〜5 m の範囲で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1004_LocalStep" xml:space="preserve">
+    <value>局所探索ステップは、0.2〜1.0 m の範囲で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1004_SurchargeRange" xml:space="preserve">
+    <value>載荷範囲は、開始位置が終了位置より小さい（start &lt; end）必要があります。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1005_WaterTable" xml:space="preserve">
+    <value>地下水位は、地表面から地盤底までの間の深さで指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1006_SettlementProperties" xml:space="preserve">
+    <value>沈下解析には、透水係数・初期間隙比・圧縮指数の入力が必要です。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1007_Surcharge" xml:space="preserve">
+    <value>載荷荷重は、0 以上の値で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1007_Load" xml:space="preserve">
+    <value>沈下解析の載荷荷重は、0 より大きい値で指定してください。</value>
+  </data>
+  <data name="ValidationIssue_GLEM1008_ZeroStrength" xml:space="preserve">
+    <value>粘着力なし（c'=0、φ'=0）の地盤層が含まれています。結果をご確認ください。</value>
+  </data>
+  <data name="Exception_GLEM2001" xml:space="preserve">
+    <value>この地盤モデルに対して無効な解析手法・深さ・層が指定されています。</value>
+  </data>
+  <data name="Exception_GLEM2002" xml:space="preserve">
+    <value>すべり面を3つ以上の有効なスライスに分割できませんでした。地盤モデルとすべり面の設定をご確認ください。</value>
+  </data>
+  <data name="Exception_GLEM2003" xml:space="preserve">
+    <value>すべり面における駆動力がゼロ以下のため、すべり面の形状が不適切です。</value>
+  </data>
+  <data name="Exception_GLEM3001" xml:space="preserve">
+    <value>このプロジェクトは新しいバージョンの GLEM で保存されています。それでも読み込みますか？</value>
+  </data>
+  <data name="Exception_GLEM3002" xml:space="preserve">
+    <value>プロジェクトファイルが無効、またはサポートされていない内容が含まれています。</value>
+  </data>
+  <data name="GroundModel_WaterTableLabel" xml:space="preserve">
+    <value>地下水位の深さ [m]：</value>
+  </data>
+  <data name="GroundModel_WaterTableTooltip" xml:space="preserve">
+    <value>地表面からの地下水位の深さ [m]</value>
+  </data>
+  <data name="GroundModel_RunValidationButton" xml:space="preserve">
+    <value>検証を実行</value>
+  </data>
+  <data name="GroundModel_AddLayerButton" xml:space="preserve">
+    <value>+ 層を追加</value>
+  </data>
+  <data name="GroundModel_RemoveLayerButton" xml:space="preserve">
+    <value>- 選択した層を削除</value>
+  </data>
+  <data name="GroundModel_MoveUpButton" xml:space="preserve">
+    <value>上へ</value>
+  </data>
+  <data name="GroundModel_MoveDownButton" xml:space="preserve">
+    <value>下へ</value>
+  </data>
+  <data name="GroundModel_ColumnNo" xml:space="preserve">
+    <value>No.</value>
+  </data>
+  <data name="GroundModel_ColumnLayerName" xml:space="preserve">
+    <value>層名</value>
+  </data>
+  <data name="GroundModel_ColumnThickness" xml:space="preserve">
+    <value>層厚 [m]</value>
+  </data>
+  <data name="SettlementSettings_Title" xml:space="preserve">
+    <value>沈下予測 (S-5)</value>
+  </data>
+  <data name="SettlementSettings_LoadingGroup" xml:space="preserve">
+    <value>載荷条件</value>
+  </data>
+  <data name="SettlementSettings_LoadLabel" xml:space="preserve">
+    <value>載荷荷重 [kPa]：</value>
+  </data>
+  <data name="SettlementSettings_LoadTooltip" xml:space="preserve">
+    <value>地盤に付加される垂直応力 [kPa]</value>
+  </data>
+  <data name="SettlementSettings_AreaLabel" xml:space="preserve">
+    <value>載荷範囲 B×L [m]：</value>
+  </data>
+  <data name="SettlementSettings_AreaBTooltip" xml:space="preserve">
+    <value>載荷矩形範囲の幅 [m]</value>
+  </data>
+  <data name="SettlementSettings_AreaLTooltip" xml:space="preserve">
+    <value>載荷矩形範囲の長さ [m]</value>
+  </data>
+  <data name="SettlementSettings_ConsolidationGroup" xml:space="preserve">
+    <value>圧密解析</value>
+  </data>
+  <data name="SettlementSettings_DrainageLabel" xml:space="preserve">
+    <value>排水条件：</value>
+  </data>
+  <data name="SettlementSettings_DurationLabel" xml:space="preserve">
+    <value>解析期間 [年]：</value>
+  </data>
+  <data name="SettlementSettings_DurationTooltip" xml:space="preserve">
+    <value>圧密沈下の時間変化解析の期間 [年]</value>
+  </data>
+  <data name="SettlementSettings_OutputPointsLabel" xml:space="preserve">
+    <value>出力点数：</value>
+  </data>
+  <data name="SettlementSettings_OutputPointsTooltip" xml:space="preserve">
+    <value>S-t曲線の出力点数（2〜1000）</value>
+  </data>
+  <data name="SettlementSettings_RunButton" xml:space="preserve">
+    <value>解析を実行</value>
+  </data>
+  <data name="SlopeSettings_Title" xml:space="preserve">
+    <value>斜面安定解析 (S-3)</value>
+  </data>
+  <data name="SlopeSettings_MethodGroup" xml:space="preserve">
+    <value>解析手法</value>
+  </data>
+  <data name="SlopeSettings_Method_Bishop" xml:space="preserve">
+    <value>簡易ビショップ法（円すべり面）</value>
+  </data>
+  <data name="SlopeSettings_Method_Fellenius" xml:space="preserve">
+    <value>フェレニウス法（円すべり面）</value>
+  </data>
+  <data name="SlopeSettings_Method_Janbu" xml:space="preserve">
+    <value>一般化ヤンブ法（非円すべり面）</value>
+  </data>
+  <data name="SlopeSettings_ControlPointsGroup" xml:space="preserve">
+    <value>すべり面制御点（ヤンブ法選択時に表示）</value>
+  </data>
+  <data name="SlopeSettings_AddPointButton" xml:space="preserve">
+    <value>+ 点を追加</value>
+  </data>
+  <data name="SlopeSettings_RemovePointButton" xml:space="preserve">
+    <value>- 選択した点を削除</value>
+  </data>
+  <data name="SlopeSettings_ControlPointsHint" xml:space="preserve">
+    <value>（3点以上必要）</value>
+  </data>
+  <data name="SlopeSettings_ColumnZ" xml:space="preserve">
+    <value>z [m]（地表面からの深さ）</value>
+  </data>
+  <data name="SlopeSettings_ParametersGroup" xml:space="preserve">
+    <value>解析パラメータ</value>
+  </data>
+  <data name="SlopeSettings_SliceWidthLabel" xml:space="preserve">
+    <value>スライス幅 [m]：</value>
+  </data>
+  <data name="SlopeSettings_SliceWidthTooltip" xml:space="preserve">
+    <value>すべり面の離散化における1スライスの幅 [m]</value>
+  </data>
+  <data name="SlopeSettings_SurchargeLabel" xml:space="preserve">
+    <value>載荷荷重 q [kPa]：</value>
+  </data>
+  <data name="SlopeSettings_SurchargeTooltip" xml:space="preserve">
+    <value>均等載荷荷重 [kPa]</value>
+  </data>
+  <data name="SlopeSettings_SurchargeRangeLabel" xml:space="preserve">
+    <value>x の範囲に適用：</value>
+  </data>
+  <data name="SlopeSettings_RangeTo" xml:space="preserve">
+    <value> 〜 </value>
+  </data>
+  <data name="SlopeSettings_SeismicLabel" xml:space="preserve">
+    <value>擬静力係数：</value>
+  </data>
+  <data name="SlopeSettings_KhTooltip" xml:space="preserve">
+    <value>水平方向の擬静力係数 [-]</value>
+  </data>
+  <data name="SlopeSettings_KvTooltip" xml:space="preserve">
+    <value>鉛直方向の擬静力係数 [-]</value>
+  </data>
+  <data name="SlopeSettings_SearchRangeLabel" xml:space="preserve">
+    <value>探索範囲：</value>
+  </data>
+  <data name="SlopeSettings_AutoSearch" xml:space="preserve">
+    <value>自動（推奨）</value>
+  </data>
+  <data name="SlopeSettings_ManualRangeGroup" xml:space="preserve">
+    <value>手動探索範囲（円中心と半径）</value>
+  </data>
+  <data name="SlopeSettings_CancelButton" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="SlopeSettings_RunButton" xml:space="preserve">
+    <value>解析を実行</value>
+  </data>
+  <data name="Default_ProjectName" xml:space="preserve">
+    <value>無題</value>
+  </data>
+  <data name="Default_Layer_TopSoil" xml:space="preserve">
+    <value>表層土</value>
+  </data>
+  <data name="Default_Layer_Clay" xml:space="preserve">
+    <value>粘土</value>
+  </data>
+  <data name="Default_LayerNameFormat" xml:space="preserve">
+    <value>層 {0}</value>
+  </data>
+  <data name="SlopeAnalysis_ProgressStarting" xml:space="preserve">
+    <value>探索を開始しています...</value>
+  </data>
+  <data name="SlopeAnalysis_ProgressCandidateFormat" xml:space="preserve">
+    <value>候補 {0}/{1}</value>
+  </data>
+  <data name="SlopeAnalysis_Cancelled" xml:space="preserve">
+    <value>キャンセルしました</value>
+  </data>
+  <data name="Report_FigureCrossSection" xml:space="preserve">
+    <value>断面図</value>
+  </data>
+  <data name="Report_FigureSettlementTimeCurve" xml:space="preserve">
+    <value>沈下-時間曲線</value>
+  </data>
+  <data name="Bool_Yes" xml:space="preserve">
+    <value>はい</value>
+  </data>
+  <data name="Bool_No" xml:space="preserve">
+    <value>いいえ</value>
+  </data>
+  <data name="SlopeResult_MinFsLabel" xml:space="preserve">
+    <value>最小安全率 FS = </value>
+  </data>
+  <data name="SlopeResult_MethodLabel" xml:space="preserve">
+    <value>解析手法: </value>
+  </data>
+  <data name="SlopeResult_ConvergedLabel" xml:space="preserve">
+    <value>収束: </value>
+  </data>
+  <data name="SlopeResult_ExportCsvButton" xml:space="preserve">
+    <value>CSVエクスポート...</value>
+  </data>
+  <data name="SlopeResult_GenerateReportButton" xml:space="preserve">
+    <value>レポート生成...</value>
+  </data>
+  <data name="SlopeResult_ColumnCTerm" xml:space="preserve">
+    <value>c項 [kN/m]</value>
+  </data>
+  <data name="SlopeResult_ColumnPhiTerm" xml:space="preserve">
+    <value>phi項 [kN/m]</value>
+  </data>
+  <data name="SlopeResult_ExportCsvNoResultMessage" xml:space="preserve">
+    <value>エクスポートする解析結果がありません。</value>
+  </data>
+  <data name="SlopeResult_ReportNoResultMessage" xml:space="preserve">
+    <value>レポートを生成する解析結果がありません。</value>
+  </data>
+  <data name="SlopeResult_ExportCsvDialogTitle" xml:space="preserve">
+    <value>条体結果のエクスポート (CSV)</value>
+  </data>
+  <data name="SlopeResult_GenerateReportDialogTitle" xml:space="preserve">
+    <value>レポート生成</value>
+  </data>
+  <data name="FileFilter_Csv" xml:space="preserve">
+    <value>CSVファイル (*.csv)|*.csv|すべてのファイル (*.*)|*.*</value>
+  </data>
+  <data name="FileFilter_Html" xml:space="preserve">
+    <value>HTMLレポート (*.html)|*.html|すべてのファイル (*.*)|*.*</value>
+  </data>
+  <data name="SettlementResult_TotalLabel" xml:space="preserve">
+    <value>合計沈下：</value>
+  </data>
+  <data name="SettlementResult_BreakdownOpenImmediate" xml:space="preserve">
+    <value>（即時</value>
+  </data>
+  <data name="SettlementResult_BreakdownPlusPrimary" xml:space="preserve">
+    <value>＋一次圧密</value>
+  </data>
+  <data name="SettlementResult_BreakdownPlusSecondary" xml:space="preserve">
+    <value>＋二次圧縮</value>
+  </data>
+  <data name="SettlementResult_BreakdownClose" xml:space="preserve">
+    <value>）</value>
+  </data>
+  <data name="SettlementResult_DaysUnit" xml:space="preserve">
+    <value>日</value>
+  </data>
+  <data name="SettlementResult_LinearTimeAxisButton" xml:space="preserve">
+    <value>線形時間軸</value>
+  </data>
+  <data name="SettlementResult_LogTimeAxisButton" xml:space="preserve">
+    <value>対数時間軸</value>
+  </data>
+  <data name="Unit_TimeDay" xml:space="preserve">
+    <value>時間 [日]</value>
+  </data>
+  <data name="SettlementResult_CursorReadoutFormat" xml:space="preserve">
+    <value>t = {0:F1} 日   U = {1:F1} %   S = {2:F2} mm</value>
+  </data>
+  <data name="SettlementResult_ExportCsvDialogTitle" xml:space="preserve">
+    <value>沈下時間系列のエクスポート (CSV)</value>
+  </data>
+  <data name="CrossSection_CircleAnnotationFormat" xml:space="preserve">
+    <value>R = {0:F1} m　中心（{1:F1}, {2:F1}）</value>
+  </data>
+  <data name="CrossSection_ControlPointsAnnotationFormat" xml:space="preserve">
+    <value>制御点 {0} 個</value>
+  </data>
+  <data name="SettlementPlot_LegendTotal" xml:space="preserve">
+    <value>合計</value>
+  </data>
+  <data name="SettlementPlot_LegendImmediate" xml:space="preserve">
+    <value>即時沈下</value>
+  </data>
+  <data name="SettlementPlot_LegendPrimaryConsolidation" xml:space="preserve">
+    <value>一次圧密沈下</value>
+  </data>
+  <data name="SettlementPlot_LegendSecondaryCompression" xml:space="preserve">
+    <value>二次圧縮沈下</value>
+  </data>
+  <data name="SettlementPlot_TimeAxisLabelLog" xml:space="preserve">
+    <value>時間 [日]（対数スケール）</value>
+  </data>
+  <data name="SettlementPlot_SettlementAxisLabel" xml:space="preserve">
+    <value>沈下量 [mm]</value>
+  </data>
+  <data name="SettlementPlot_T50AnnotationFormat" xml:space="preserve">
+    <value>U=50%（T50={0:F0} 日）</value>
+  </data>
+  <data name="SettlementPlot_T90AnnotationFormat" xml:space="preserve">
+    <value>U=90%（T90={0:F0} 日）</value>
+  </data>
+</root>
