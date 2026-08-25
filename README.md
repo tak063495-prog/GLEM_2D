@@ -100,6 +100,7 @@ GLEM.sln
 - [Calculation methods, assumptions, and reference cases](docs/METHODS.md) ([日本語](docs/METHODS.ja.md))
 - [Release notes](RELEASE-NOTES.md)
 - [Performance records](docs/perf/README.md)
+- [Roadmap and TODO (P2-P4)](TODO.md) ([日本語](TODO.ja.md))
 
 ## Contributing and security
 

@@ -15,6 +15,7 @@ English version: [README.md](README.md)
 | [docs/GLEM_ユーザーマニュアル.md](docs/GLEM_ユーザーマニュアル.md) | ユーザー向け操作手順・FAQ |
 | [docs/GLEM_実装計画書.md](docs/GLEM_実装計画書.md) | マイルストーン M0〜M4・WBS・リスク |
 | [docs/METHODS.ja.md](docs/METHODS.ja.md) | 使用式・仮定・適用範囲・制限・参照ケース（[English](docs/METHODS.md)） |
+| [TODO.ja.md](TODO.ja.md) | P2〜P4ロードマップ・完了条件（[English](TODO.md)） |
 
 ## 主な機能
 
