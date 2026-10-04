@@ -31,8 +31,10 @@ Bishop純粘着・α30°・l2m・W100・c10: F=20/50=0.4。
 ## 検証
 
 初期新規10テストは修正前9失敗、修正後10PASS。
-修正後Release build PASS、全122テストPASS、GLEM.Core coverage 93.11%（1095/1176、gate≥80%）。
-最終性能コミットとremote CIの結果は後続で追記します。手動GUI操作や署名付き配布公開は未実施です。
+修正・性能変更後のRelease build PASS、全123テストPASS（skip 0）。
+GLEM.Core coverage 93.19%（1109/1190、gate≥80%）で既存coverage gateもPASS。
+既存リリース自己診断C01–C03は、アプリ起動時のユーザー領域書込みを避けてテストから呼び出しPASS。
+GitHub上の既存CI結果はドラフトPRのChecksで確認できます。手動GUI操作・署名付き配布公開はNOT_RUN。
 
 ## 未修正・対象外
 
