@@ -30,6 +30,8 @@ public static class ExceptionLocalizer
             "GLEM-2001" => "Exception_GLEM2001",
             "GLEM-2002" => "Exception_GLEM2002",
             "GLEM-2003" => "Exception_GLEM2003",
+            "GLEM-2004" => "Exception_GLEM2004",
+            "GLEM-2005" => "Exception_GLEM2005",
             "GLEM-3001" => "Exception_GLEM3001",
             "GLEM-3002" => "Exception_GLEM3002",
             _ => null

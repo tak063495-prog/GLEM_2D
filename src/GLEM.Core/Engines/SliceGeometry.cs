@@ -6,4 +6,8 @@ public sealed record SliceGeometry(
     double ZMid,
     double DeltaL,
     double AlphaRad,
-    double WKnPerM);
+    double WKnPerM)
+{
+    // DeltaL is base length; vertical slices use its horizontal projection for area/load/Bishop.
+    public double HorizontalWidthM { get; init; } = DeltaL * Math.Cos(AlphaRad);
+}

@@ -22,7 +22,7 @@ public sealed class SettlementTests
 {
     private static GroundModel ConsolidationGround() => new()
     {
-        WaterTableDepthM = 20.0,
+        WaterTableDepthM = 4.0, // Dry layer, at the model bottom.
         Layers =
         {
             new SoilLayer

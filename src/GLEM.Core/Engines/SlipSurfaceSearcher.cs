@@ -20,6 +20,10 @@ public sealed class SlipSurfaceSearcher
         IProgress<SearchProgress>? progress = null,
         CancellationToken ct = default)
     {
+        GLEM.Core.Validation.AnalysisInputValidator.ThrowIfErrors(
+            GLEM.Core.Validation.GroundModelValidator.Validate(gm).Concat(
+                GLEM.Core.Validation.AnalysisInputValidator.ValidateSlope(gm, input)));
+        ct.ThrowIfCancellationRequested();
         var engine = CreateEngine(input);
         var conditions = AnalysisConditions.FromInput(input);
         var candidates = GenerateCandidates(gm, input);
@@ -27,7 +31,7 @@ public sealed class SlipSurfaceSearcher
         var best = EvaluateBest(candidates, gm, input, engine, conditions, progress, ct);
         if (best is null)
         {
-            throw new EngineException("GLEM-2002", "Fewer than 3 valid slices. Please check the slip surface shape.");
+            throw new EngineException("GLEM-2004", "No finite converged candidate with positive driving force. The flat symmetric ground may have zero static driving; check geometry and loading direction.");
         }
 
         var refined = LocalRefine(best, gm, input, engine, conditions, ct);
@@ -160,7 +164,7 @@ public sealed class SlipSurfaceSearcher
         {
             var slices = SliceDiscretizer.DiscretizeCircle(candidate.Cx, candidate.Cz, candidate.R, gm, input.SliceWidthM);
             calc = engine.Compute(slices, gm, conditions);
-            return true;
+            return calc.Converged && double.IsFinite(calc.Fs) && calc.Fs >= 0;
         }
         catch (EngineException ex) when (ex.Code is "GLEM-2001" or "GLEM-2002" or "GLEM-2003")
         {

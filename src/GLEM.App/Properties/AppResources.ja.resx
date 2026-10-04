@@ -644,4 +644,6 @@
   <data name="Accessibility_SettlementPlot" xml:space="preserve"><value>沈下量と時間のグラフ</value></data>
   <data name="Accessibility_SettlementPlotHelp" xml:space="preserve"><value>合計・即時・一次圧密・二次圧縮の各曲線を異なる線種で示します。</value></data>
   <data name="Accessibility_SettlementResultTable" xml:space="preserve"><value>沈下時間系列結果テーブル</value></data>
+  <data name="Exception_GLEM2004" xml:space="preserve"><value>正の駆動力を持つ有限・収束済みのすべり面が見つかりません。水平で対称な地盤の静的駆動力はゼロです。形状、載荷方向、反復設定を確認してください。</value></data>
+  <data name="Exception_GLEM2005" xml:space="preserve"><value>即時沈下は均質な弾性半無限地盤に限定しています。全層のEsとポアソン比を同一にするか、全層のEsを省略して圧密のみを解析してください。</value></data>
 </root>

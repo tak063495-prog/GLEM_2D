@@ -80,7 +80,7 @@ public sealed class SlopeStabilityTests
         foreach (var s in slices)
         {
             var mAlpha = Math.Cos(s.AlphaRad) * (1.0 + Math.Tan(s.AlphaRad) * tanPhi / calc.Fs);
-            numerator += (5.0 * s.DeltaL + s.WKnPerM * tanPhi) / mAlpha;
+            numerator += (5.0 * s.DeltaL * Math.Cos(s.AlphaRad) + s.WKnPerM * tanPhi) / mAlpha;
             denominator += s.WKnPerM * Math.Sin(s.AlphaRad);
         }
 
@@ -92,7 +92,7 @@ public sealed class SlopeStabilityTests
     {
         var gm = TestGround(10.0);
         var slices = SliceDiscretizer.DiscretizeCircle(cx: 0, cz: -4, radius: 6, gm, sliceWidthM: 1.0);
-        var conditions = new AnalysisConditions(0, null, null, 0, 0);
+        var conditions = new AnalysisConditions(0, null, null, .1, 0);
 
         LambdaCalculator.IsCircular(slices).Should().BeTrue();
         LambdaCalculator.ComputeLambdaC(slices).Should().BeApproximately(1.0, 1e-12);
@@ -270,15 +270,14 @@ public sealed class SlopeStabilityTests
     [Fact]
     public void T04_PoreWaterPressure_DecreasesSafetyFactor()
     {
-        var circle = (cx: 0.0, cz: -3.0, r: 6.0);
         var conditions = new AnalysisConditions(0, null, null, 0, 0);
 
         var fsDry = new FelleniusEngine().Compute(
-            SliceDiscretizer.DiscretizeCircle(circle.cx, circle.cz, circle.r, TestGround(8.0), 1.0),
+            HandCraftedSlices(),
             TestGround(8.0), conditions).Fs;
 
         var fsWet = new FelleniusEngine().Compute(
-            SliceDiscretizer.DiscretizeCircle(circle.cx, circle.cz, circle.r, TestGround(2.0), 1.0),
+            HandCraftedSlices(),
             TestGround(2.0), conditions).Fs;
 
         fsWet.Should().BeLessThan(fsDry);
@@ -288,7 +287,7 @@ public sealed class SlopeStabilityTests
     public void T05_SeismicCoefficient_DecreasesSafetyFactor()
     {
         var gm = TestGround(8.0);
-        var slices = SliceDiscretizer.DiscretizeCircle(cx: 0, cz: -3, radius: 6, gm, sliceWidthM: 1.0);
+        var slices = HandCraftedSlices();
 
         var fsStatic = new FelleniusEngine().Compute(slices, gm, new AnalysisConditions(0, null, null, 0, 0)).Fs;
         var fsSeismic = new FelleniusEngine().Compute(slices, gm, new AnalysisConditions(0, null, null, Kh: 0.1, Kv: 0)).Fs;
@@ -309,7 +308,7 @@ public sealed class SlopeStabilityTests
         {
             var dist = Math.Sqrt((s.XMid - cx) * (s.XMid - cx) + (s.ZMid - cz) * (s.ZMid - cz));
             dist.Should().BeApproximately(radius, 1e-9);
-            s.AlphaRad.Should().BeInRange(0.0, Math.PI / 2.0);
+            s.AlphaRad.Should().BeApproximately(Math.Atan2(-(s.XMid - cx), s.ZMid - cz), 1e-12);
             s.WKnPerM.Should().BeGreaterThan(0.0);
         }
     }

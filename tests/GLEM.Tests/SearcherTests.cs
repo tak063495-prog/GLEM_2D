@@ -26,6 +26,7 @@ public sealed class SearcherTests
     private static SlopeAnalysisInput BoundedSearch() => new()
     {
         Method = SlopeMethod.Fellenius,
+        Kh = .1, // Explicit driving for the flat symmetric ground model.
         SliceWidthM = 1.0,
         CoarseGridStepM = 2.0,
         LocalStepM = 0.5,

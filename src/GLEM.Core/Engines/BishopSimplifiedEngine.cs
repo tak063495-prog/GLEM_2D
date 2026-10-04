@@ -9,6 +9,8 @@ public sealed class BishopSimplifiedEngine : ISlopeStabilityEngine
 
     public BishopSimplifiedEngine(double convergenceTolerance = 0.001, int maxIterations = 200)
     {
+        if (!double.IsFinite(convergenceTolerance) || convergenceTolerance <= 0 || maxIterations < 1)
+            throw new EngineException("GLEM-2001", "convergence_tolerance and max_iterations must be positive and finite.");
         _convergenceTolerance = convergenceTolerance;
         _maxIterations = maxIterations;
     }
@@ -36,13 +38,13 @@ public sealed class BishopSimplifiedEngine : ISlopeStabilityEngine
                 var phiRad = layer.FrictionAngleDeg * Math.PI / 180.0;
 
                 var mAlpha = Math.Cos(s.AlphaRad) * (1.0 + Math.Tan(s.AlphaRad) * Math.Tan(phiRad) / fs);
-                if (Math.Abs(mAlpha) < 1e-9)
+                if (!double.IsFinite(mAlpha) || mAlpha <= 1e-9)
                 {
                     throw new EngineException("GLEM-2003", "The driving force is zero or less. The slip surface shape is inappropriate.");
                 }
 
-                var cTerm = layer.CohesionKpa * s.DeltaL;
-                var phiRaw = (wEff * (1.0 + conditions.Kv) - u * s.DeltaL) * Math.Tan(phiRad);
+                var cTerm = layer.CohesionKpa * s.HorizontalWidthM;
+                var phiRaw = (wEff * (1.0 + conditions.Kv) - u * s.HorizontalWidthM) * Math.Tan(phiRad);
                 var np = Math.Max(0.0, wEff * (1.0 + conditions.Kv) * Math.Cos(s.AlphaRad) - u * s.DeltaL);
 
                 numerator += (cTerm + phiRaw) / mAlpha;
@@ -50,13 +52,22 @@ public sealed class BishopSimplifiedEngine : ISlopeStabilityEngine
                 pass.Add(new SliceComputation(s, u, np, cTerm / mAlpha, phiRaw / mAlpha));
             }
 
-            if (denominator <= 0.0)
+            if (!double.IsFinite(denominator) || denominator <= 1e-12 * Math.Max(1, slices.Sum(s => Math.Abs(FelleniusEngine.EffectiveWeight(s, conditions)))))
             {
                 throw new EngineException("GLEM-2003", "The driving force is zero or less. The slip surface shape is inappropriate.");
             }
 
             var fsNew = numerator / denominator;
             computations = pass;
+            if (!double.IsFinite(fsNew) || fsNew < 0)
+                throw new EngineException("GLEM-2003", "Bishop iteration produced a nonfinite or negative safety factor.");
+            if (fsNew == 0)
+            {
+                // Pure zero resistance has the exact finite solution FS=0; do not divide by it next pass.
+                if (slices.All(s => gm.LayerAt(s.ZMid).CohesionKpa == 0 && gm.LayerAt(s.ZMid).FrictionAngleDeg == 0))
+                    return new SlopeCalculation(0, true, iterations, computations);
+                throw new EngineException("GLEM-2003", "Bishop iteration has zero effective resistance.");
+            }
 
             if (Math.Abs(fsNew - fs) < _convergenceTolerance)
             {
@@ -68,6 +79,6 @@ public sealed class BishopSimplifiedEngine : ISlopeStabilityEngine
             fs = fsNew;
         }
 
-        return new SlopeCalculation(fs, converged, iterations, computations);
+        return new SlopeCalculation(fs, converged, Math.Min(iterations, _maxIterations), computations);
     }
 }

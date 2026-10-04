@@ -6,6 +6,9 @@ public static class SliceDiscretizer
 {
     public static List<SliceGeometry> DiscretizeCircle(double cx, double cz, double radius, GroundModel gm, double sliceWidthM)
     {
+        if (!double.IsFinite(cx) || !double.IsFinite(cz) || !double.IsFinite(radius) || radius <= 0 ||
+            !double.IsFinite(sliceWidthM) || sliceWidthM <= 0 || cz >= 0 || cz + radius > gm.TotalThicknessM)
+            throw new EngineException("GLEM-2002", "Circle must define a finite, single-valued base inside the ground.");
         var thetaRange = ValidThetaRange(cz, radius);
         if (thetaRange is null)
         {
@@ -35,9 +38,11 @@ public static class SliceDiscretizer
                 continue;
             }
 
-            var gamma = gm.LayerAt(zMid).GammaKnm3;
-            var w = gamma * radius * dTheta * heightAvg;
-            slices.Add(new SliceGeometry(i + 1, xMid, zMid, radius * dTheta, BaseInclination(tm), w));
+            var width = radius * (Math.Sin(t1) - Math.Sin(t0));
+            var baseLength = 2 * radius * Math.Sin(dTheta / 2);
+            var w = IntegratedWeight(gm, width, hL, hR);
+            slices.Add(new SliceGeometry(i + 1, xMid, zMid, baseLength, BaseInclination(tm), w)
+                { HorizontalWidthM = width });
         }
 
         if (slices.Count < 3)
@@ -51,6 +56,8 @@ public static class SliceDiscretizer
     // 非円滑動面（制御点列、M-3）の条体離散化。地表は z=0 の水平線と仮定する。
     public static List<SliceGeometry> DiscretizeFunction(FunctionSurface fs, GroundModel gm, double sliceWidthM)
     {
+        if (!double.IsFinite(sliceWidthM) || sliceWidthM <= 0)
+            throw new EngineException("GLEM-2002", "slice_width_m must be finite and positive.");
         var pts = fs.ControlPoints.OrderBy(p => p.X).ToList();
         if (pts.Count < 2)
         {
@@ -99,9 +106,10 @@ public static class SliceDiscretizer
                 var alpha = Math.Atan2(z1 - z0, x1 - x0);
                 alpha = Math.Clamp(alpha, -Math.PI / 2 + 0.017, Math.PI / 2 - 0.017); // ±89 deg
 
-                var gamma = gm.LayerAt(zMid).GammaKnm3;
-                var w = gamma * segLen / n * hAvg;
-                slices.Add(new SliceGeometry(slices.Count + 1, xMid, zMid, segLen / n, alpha, w));
+                var width = xm1 - xm0;
+                var w = IntegratedWeight(gm, width, zm0, zm1);
+                slices.Add(new SliceGeometry(slices.Count + 1, xMid, zMid, segLen / n, alpha, w)
+                    { HorizontalWidthM = width });
             }
         }
 
@@ -115,13 +123,39 @@ public static class SliceDiscretizer
 
     public static double BaseInclination(double theta)
     {
-        var alpha = Math.Abs(theta % (Math.PI * 2.0));
-        if (alpha > Math.PI)
-        {
-            alpha = Math.PI * 2.0 - alpha;
-        }
+        // z is positive downward: dz/dx=-tan(theta) on the valid upper semicircle.
+        return Math.Atan2(-Math.Sin(theta), Math.Cos(theta));
+    }
 
-        return Math.Min(alpha, Math.PI - alpha);
+    private static double IntegratedWeight(GroundModel gm, double width, double z0, double z1)
+    {
+        var cuts = new List<double> { 0, 1 };
+        var depth = 0.0;
+        foreach (var layer in gm.Layers)
+        {
+            depth += layer.ThicknessM;
+            if (z1 != z0)
+            {
+                var t = (depth - z0) / (z1 - z0);
+                if (t > 0 && t < 1) cuts.Add(t);
+            }
+        }
+        cuts.Sort();
+        double Overburden(double z)
+        {
+            var sum = 0.0; var top = 0.0;
+            foreach (var layer in gm.Layers)
+            {
+                sum += layer.GammaKnm3 * Math.Clamp(z - top, 0, layer.ThicknessM);
+                top += layer.ThicknessM;
+            }
+            return sum;
+        }
+        var weight = 0.0;
+        for (var i = 1; i < cuts.Count; i++)
+            weight += width * (cuts[i] - cuts[i-1]) *
+                (Overburden(z0 + (z1-z0)*cuts[i-1]) + Overburden(z0 + (z1-z0)*cuts[i])) / 2;
+        return weight;
     }
 
     private static double BaseZ(double cx, double cz, double radius, double theta) => cz + radius * Math.Cos(theta);

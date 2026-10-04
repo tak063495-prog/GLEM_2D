@@ -11,8 +11,7 @@ namespace GLEM.Tests;
 // L2 integration tests against the WPF view models (test plan C-01/C-02, R-3.1.4).
 public sealed class UiViewModelTests : IDisposable
 {
-    private static string AutosavePath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GLEM", "autosave.glem");
+    private readonly string AutosavePath = Path.Combine(Path.GetTempPath(), $"glem-autosave-{Guid.NewGuid():N}.glem");
 
     [Fact]
     public void C01_NewProject_HasTwoLayersAndValidationPasses()
@@ -82,7 +81,7 @@ public sealed class UiViewModelTests : IDisposable
 
         try
         {
-            var vm = new MainViewModel();
+            var vm = new MainViewModel(AutosavePath);
             vm.HasPendingAutosave.Should().BeFalse();
 
             vm.Project.ProjectName = "AutosaveRoundTrip";
@@ -92,7 +91,7 @@ public sealed class UiViewModelTests : IDisposable
             File.Exists(AutosavePath).Should().BeTrue();
 
             // Simulate restart: a new instance sees the pending autosave (C-09)
-            var restarted = new MainViewModel();
+            var restarted = new MainViewModel(AutosavePath);
             restarted.HasPendingAutosave.Should().BeTrue();
 
             restarted.RestoreFromAutosave();
@@ -114,6 +113,8 @@ public sealed class UiViewModelTests : IDisposable
     public async Task C03_MethodSwitching_ProducesValidFsForAllMethods()
     {
         var vm = new MainViewModel();
+        // Flat symmetric circular geometry needs a specified driving load.
+        vm.SlopeAnalysis.Kh = .1;
 
         // Bounded manual search range keeps the test fast
         vm.SlopeAnalysis.AutoSearch = false;
@@ -205,6 +206,11 @@ public sealed class UiViewModelTests : IDisposable
         clay.CompressionIndexCc = 0.3;
         clay.SecondaryCompressionIndexCs = 0.02;
         clay.ElasticModulusKpa = 20000.0;
+        foreach (var layer in vm.GroundModelEditor.Layers)
+        {
+            layer.ElasticModulusKpa = 20000;
+            layer.PoissonRatio = .3;
+        }
 
         await ((IAsyncRelayCommand)vm.Settlement.RunCommand).ExecuteAsync(null);
 
