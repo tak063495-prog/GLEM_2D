@@ -1,5 +1,9 @@
 # GLEM Release Notes
 
+## Unreleased — 2026-10 review
+
+[日本語の修正・検証記録](docs/RELEASE_NOTES_20261004_JA.md)
+
 ## v1.2.0 — 2026-08-25
 
 P1改善として、公開ソフトとしてのアクセシビリティ、解析根拠、配布物の信頼性、CIセキュリティを強化。

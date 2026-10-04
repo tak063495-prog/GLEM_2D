@@ -10,11 +10,14 @@ public sealed class SettlementEngine
 
     public SettlementAnalysisResult Compute(GroundModel gm, SettlementAnalysisInput input)
     {
+        GLEM.Core.Validation.AnalysisInputValidator.ThrowIfErrors(
+            GLEM.Core.Validation.GroundModelValidator.Validate(gm).Concat(
+                GLEM.Core.Validation.AnalysisInputValidator.ValidateSettlement(gm, input)));
         var sImm = ImmediateSettlementMm(gm, input);
         var layerPrimary = PrimaryConsolidationByLayer(gm, input);
         var sPriTotal = layerPrimary.Sum(p => p.SettlementM);
 
-        var tCSeconds = TimeToRatioSeconds(gm, input, 0.95, layerPrimary);
+        var layerTc = gm.Layers.ToDictionary(layer => layer, layer => LayerTimeTo95Seconds(gm, layer, input));
         var durationDays = Math.Max(1.0, input.DurationYears * DaysPerYear);
 
         var series = new List<SettlementTimePoint>(input.OutputPointCount);
@@ -28,12 +31,12 @@ public sealed class SettlementEngine
                 ? layerPrimary.Sum(p => p.SettlementM * ConsolidationRatio(gm, p.Layer, input, tSeconds)) / sPriTotal
                 : 1.0;
 
-            var sSec = SecondarySettlementMm(gm, input, tSeconds, tCSeconds);
+            var sSec = SecondaryByLayerM(gm, tSeconds, layerTc);
             var sPriNow = sPriTotal * uWeighted;
             series.Add(new SettlementTimePoint(tDays, uWeighted * 100.0, (sImm + sPriNow + sSec) * 1000.0, sImm * 1000.0, sPriNow * 1000.0, sSec * 1000.0));
         }
 
-        var sEnd = SecondarySettlementMm(gm, input, durationDays * SecondsPerDay, tCSeconds);
+        var sEnd = SecondaryByLayerM(gm, durationDays * SecondsPerDay, layerTc);
         return new SettlementAnalysisResult(
             (sImm + sPriTotal + sEnd) * 1000.0,
             sImm * 1000.0,
@@ -46,21 +49,20 @@ public sealed class SettlementEngine
 
     public static double ImmediateSettlementMm(GroundModel gm, SettlementAnalysisInput input)
     {
+        if (!double.IsFinite(input.LoadedAreaB) || input.LoadedAreaB <= 0 || !double.IsFinite(input.LoadedAreaL) || input.LoadedAreaL <= 0)
+            throw new EngineException("GLEM-2001", "loaded_area_b/loaded_area_l must be finite and positive.");
+        var elastic = gm.Layers.Where(l => l.ThicknessM > 0).ToList();
+        if (elastic.Count == 0 || elastic.All(l => l.ElasticModulusKpa is null)) return 0;
+        var first = elastic[0];
+        // Existing formula is a homogeneous elastic half-space solution, independent of finite thickness.
+        // Heterogeneous finite-layer elasticity needs a separate method and is not summed heuristically.
+        if (first.ElasticModulusKpa is not { } es || !double.IsFinite(es) || es <= 0 ||
+            !double.IsFinite(first.EffectivePoissonRatio) || first.EffectivePoissonRatio <= -1 || first.EffectivePoissonRatio >= .5 ||
+            elastic.Any(l => l.ElasticModulusKpa != first.ElasticModulusKpa || l.EffectivePoissonRatio != first.EffectivePoissonRatio))
+            throw new EngineException("GLEM-2005", "Immediate settlement supports a homogeneous elastic half-space only (es_kpa/nu). Omit all Es values for consolidation-only analysis.");
         var influence = RectangularInfluenceFactor(input.LoadedAreaB, input.LoadedAreaL);
-        var s = 0.0;
-
-        foreach (var layer in gm.Layers)
-        {
-            if (layer.ElasticModulusKpa is not { } es || es <= 0.0)
-            {
-                continue;
-            }
-
-            var nu = layer.EffectivePoissonRatio;
-            s += input.LoadKpa * (1.0 - nu * nu) / (Math.PI * es) * influence;
-        }
-
-        return s;
+        var nu = first.EffectivePoissonRatio;
+        return input.LoadKpa * (1.0 - nu * nu) / (Math.PI * es) * influence;
     }
 
     public static double RectangularInfluenceFactor(double b, double l)
@@ -131,6 +133,8 @@ public sealed class SettlementEngine
         {
             return 1.0;
         }
+        if (layer.ThicknessM <= 0 || cc == 0) return 1;
+        if (k == 0) return 0;
 
         var sigmaV0 = Math.Max(MinimumEffectiveStressKpa, StressCalculator.EffectiveVerticalStressKpa(gm, gm.LayerMidDepth(layer)));
         var mv = cc / ((1.0 + e0) * sigmaV0 * GlemConstants.Ln10);
@@ -147,21 +151,23 @@ public sealed class SettlementEngine
         return 1.0 - (8.0 / (Math.PI * Math.PI)) * Math.Exp(-(Math.PI * Math.PI / 4.0) * tv);
     }
 
-    private static double TimeToRatioSeconds(GroundModel gm, SettlementAnalysisInput input, double targetU, List<(SoilLayer Layer, double SettlementM)> layerPrimary)
+    private static double LayerTimeTo95Seconds(GroundModel gm, SoilLayer layer, SettlementAnalysisInput input)
     {
-        var maxT = 0.0;
-        foreach (var (layer, _) in layerPrimary)
-        {
-            if (!TrySolveRatio(gm, layer, input, targetU, out var t))
-            {
-                continue;
-            }
-
-            maxT = Math.Max(maxT, t);
-        }
-
-        return maxT > 0.0 ? maxT : input.DurationYears * DaysPerYear * SecondsPerDay;
+        if (layer.PermeabilityMs is not { } k || layer.InitialVoidRatio is not { } e0 || layer.CompressionIndexCc is not { } cc || cc == 0)
+            return 1; // No primary consolidation clock: explicit one-second reference for the legacy secondary law.
+        if (k == 0) return double.PositiveInfinity;
+        var sigma = Math.Max(MinimumEffectiveStressKpa, StressCalculator.EffectiveVerticalStressKpa(gm, gm.LayerMidDepth(layer)));
+        var mv = cc / ((1 + e0) * sigma * GlemConstants.Ln10);
+        var cv = k / (mv * GlemConstants.GammaWaterKnm3);
+        var hdr = input.DrainageMode == Drainage.Double ? layer.ThicknessM / 2 : layer.ThicknessM;
+        // Invert this engine's large-Tv consolidation law at U=.95, independent of output duration.
+        var tv95 = -4 / (Math.PI * Math.PI) * Math.Log(.05 * Math.PI * Math.PI / 8);
+        return Math.Max(1, tv95 * hdr * hdr / cv);
     }
+
+    private static double SecondaryByLayerM(GroundModel gm, double tSeconds, IReadOnlyDictionary<SoilLayer, double> clocks) =>
+        gm.Layers.Sum(layer => layer.EffectiveCs > 0 && layer.InitialVoidRatio is { } e0 && tSeconds > clocks[layer]
+            ? layer.ThicknessM / (1 + e0) * layer.EffectiveCs * Math.Log10(tSeconds / clocks[layer]) : 0);
 
     private static double? SolveTimeDays(GroundModel gm, SettlementAnalysisInput input, List<(SoilLayer Layer, double SettlementM)> layerPrimary, double targetU, double durationDays)
     {
@@ -197,31 +203,4 @@ public sealed class SettlementEngine
         return (lo + hi) / 2.0 / SecondsPerDay;
     }
 
-    private static bool TrySolveRatio(GroundModel gm, SoilLayer layer, SettlementAnalysisInput input, double targetU, out double tSeconds)
-    {
-        var lo = 1.0 * SecondsPerDay;
-        var hi = input.DurationYears * DaysPerYear * SecondsPerDay;
-
-        if (ConsolidationRatio(gm, layer, input, hi) < targetU)
-        {
-            tSeconds = 0.0;
-            return false;
-        }
-
-        for (var i = 0; i < 200; i++)
-        {
-            var mid = (lo + hi) / 2.0;
-            if (ConsolidationRatio(gm, layer, input, mid) < targetU)
-            {
-                lo = mid;
-            }
-            else
-            {
-                hi = mid;
-            }
-        }
-
-        tSeconds = (lo + hi) / 2.0;
-        return true;
-    }
 }

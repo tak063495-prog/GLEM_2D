@@ -25,8 +25,12 @@ public sealed partial class MainViewModel : ObservableObject
 
     private readonly DispatcherTimer _autosaveTimer;
 
-    public MainViewModel()
+    public MainViewModel() : this(null) { }
+
+    public MainViewModel(string? autosavePath)
     {
+        AutosavePath = autosavePath ?? Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GLEM", "autosave.glem");
         GroundModelEditor = new GroundModelEditorViewModel(this);
         SlopeAnalysis = new SlopeAnalysisViewModel(this);
         Settlement = new SettlementViewModel(this);
@@ -72,8 +76,7 @@ public sealed partial class MainViewModel : ObservableObject
     // R-3.1.5: より新しいバージョンのファイルを開く際の確認（true で読み込み続行）
     public Func<string, bool>? VersionMismatchConfirm { get; set; }
 
-    public string AutosavePath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GLEM", "autosave.glem");
+    public string AutosavePath { get; }
 
     public void MarkDirty() => IsDirty = true;
 

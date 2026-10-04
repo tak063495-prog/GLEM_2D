@@ -24,12 +24,12 @@ public sealed class PerformanceTests
         // Warmup (JIT) so the measured runs are representative
         new SlipSurfaceSearcher().Search(
             gm,
-            new SlopeAnalysisInput { SearchRange = new SearchRange(-5, 5, -10, -2, 4, 8), CoarseGridStepM = 2.0 });
+            new SlopeAnalysisInput { Kh = .1, SearchRange = new SearchRange(-5, 5, -10, -2, 4, 8), CoarseGridStepM = 2.0 });
         new SettlementEngine().Compute(gm, BuildSettlementInput());
 
         var searchSw = Stopwatch.StartNew();
         var slopeResult = new SlipSurfaceSearcher()
-            .Search(gm, new SlopeAnalysisInput { Method = SlopeMethod.BishopSimplified });
+            .Search(gm, new SlopeAnalysisInput { Method = SlopeMethod.BishopSimplified, Kh = .1 });
         searchSw.Stop();
 
         var settlementSw = Stopwatch.StartNew();
@@ -73,7 +73,8 @@ public sealed class PerformanceTests
                 InitialVoidRatio = isClay ? 1.5 : 0.7,
                 CompressionIndexCc = isClay ? 0.3 : 0.2,
                 SecondaryCompressionIndexCs = 0.02,
-                ElasticModulusKpa = isClay ? 15000.0 : 40000.0
+                // Immediate component now uses one homogeneous elastic half-space.
+                ElasticModulusKpa = 20000.0
             });
         }
 

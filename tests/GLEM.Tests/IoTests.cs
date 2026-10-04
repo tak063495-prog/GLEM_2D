@@ -328,7 +328,7 @@ public sealed class IoTests : IDisposable
     {
         var gm = new GroundModel
         {
-            WaterTableDepthM = 20.0,
+            WaterTableDepthM = 4.0,
             Layers =
             {
                 new SoilLayer

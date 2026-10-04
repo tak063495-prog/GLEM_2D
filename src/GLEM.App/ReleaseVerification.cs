@@ -32,6 +32,7 @@ public static class ReleaseVerification
 
             // S-4: 円弧滑動面を持つ結果（Bishop・限定探索範囲）を先に生成する
             vm.SlopeAnalysis.AutoSearch = false;
+            vm.SlopeAnalysis.Kh = .1; // Explicit driving for the flat symmetric verification geometry.
             vm.SlopeAnalysis.CxMin = -8.0;
             vm.SlopeAnalysis.CxMax = 8.0;
             vm.SlopeAnalysis.CzMin = -10.0;
@@ -54,7 +55,8 @@ public static class ReleaseVerification
                 row.InitialVoidRatio ??= 1.2;
                 row.CompressionIndexCc ??= 0.25;
                 row.SecondaryCompressionIndexCs = 0.02;
-                row.ElasticModulusKpa ??= 20000.0;
+                row.ElasticModulusKpa = 20000.0;
+                row.PoissonRatio = .3;
             }
 
             ((IAsyncRelayCommand)vm.Settlement.RunCommand).ExecuteAsync(null).GetAwaiter().GetResult();
@@ -168,6 +170,7 @@ public static class ReleaseVerification
         {
             var vm = new MainViewModel();
             vm.SlopeAnalysis.AutoSearch = false;
+            vm.SlopeAnalysis.Kh = .1; // Same physically driven case as the UI regression.
             vm.SlopeAnalysis.CxMin = -4.0;
             vm.SlopeAnalysis.CxMax = 4.0;
             vm.SlopeAnalysis.CzMin = -6.0;

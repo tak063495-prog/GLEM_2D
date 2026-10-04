@@ -16,32 +16,32 @@ public static class AnalysisInputValidator
     {
         var issues = new List<ValidationIssue>();
 
-        if (input.SurchargeKpa < 0.0)
+        if (!double.IsFinite(input.SurchargeKpa) || input.SurchargeKpa < 0.0)
         {
             issues.Add(ValidationIssue.Error("GLEM-1007", "surcharge_kpa", "Please specify the surcharge load as a value of 0 or greater"));
         }
 
-        if (input.SliceWidthM < SliceWidthMin || input.SliceWidthM > SliceWidthMax)
+        if (!double.IsFinite(input.SliceWidthM) || input.SliceWidthM < SliceWidthMin || input.SliceWidthM > SliceWidthMax)
         {
             issues.Add(ValidationIssue.Error("GLEM-1004", "slice_width_m", $"The value for 'slice width' is outside the allowed range ({input.SliceWidthM})"));
         }
 
-        if (input.Kh < 0.0 || input.Kh > SeismicCoefficientMax)
+        if (!double.IsFinite(input.Kh) || input.Kh < 0.0 || input.Kh > SeismicCoefficientMax)
         {
             issues.Add(ValidationIssue.Error("GLEM-1004", "kh", $"The value for 'pseudo-static coefficient kh' is outside the allowed range ({input.Kh})"));
         }
 
-        if (input.Kv < 0.0 || input.Kv > SeismicCoefficientMax)
+        if (!double.IsFinite(input.Kv) || input.Kv < 0.0 || input.Kv > SeismicCoefficientMax)
         {
             issues.Add(ValidationIssue.Error("GLEM-1004", "kv", $"The value for 'pseudo-static coefficient kv' is outside the allowed range ({input.Kv})"));
         }
 
-        if (input.CoarseGridStepM < CoarseGridStepMin || input.CoarseGridStepM > CoarseGridStepMax)
+        if (!double.IsFinite(input.CoarseGridStepM) || input.CoarseGridStepM < CoarseGridStepMin || input.CoarseGridStepM > CoarseGridStepMax)
         {
             issues.Add(ValidationIssue.Error("GLEM-1004", "coarse_grid_step_m", $"The value for 'coarse grid interval' is outside the allowed range ({input.CoarseGridStepM})"));
         }
 
-        if (input.LocalStepM < LocalStepMin || input.LocalStepM > LocalStepMax)
+        if (!double.IsFinite(input.LocalStepM) || input.LocalStepM < LocalStepMin || input.LocalStepM > LocalStepMax)
         {
             issues.Add(ValidationIssue.Error("GLEM-1004", "local_step_m", $"The value for 'local search step' is outside the allowed range ({input.LocalStepM})"));
         }
@@ -50,6 +50,20 @@ public static class AnalysisInputValidator
         {
             issues.Add(ValidationIssue.Error("GLEM-1004", "surcharge_start_x/surcharge_end_x", $"The value for 'surcharge range' is outside the allowed range (start < end required)"));
         }
+        if ((input.SurchargeStartX.HasValue != input.SurchargeEndX.HasValue) ||
+            (input.SurchargeStartX is { } start && !double.IsFinite(start)) ||
+            (input.SurchargeEndX is { } end && !double.IsFinite(end)))
+            issues.Add(ValidationIssue.Error("GLEM-1004", "surcharge_start_x/surcharge_end_x", "Specify both finite surcharge endpoints, or omit both."));
+        if (!double.IsFinite(input.ConvergenceTolerance) || input.ConvergenceTolerance <= 0)
+            issues.Add(ValidationIssue.Error("GLEM-1004", "convergence_tolerance", "Convergence tolerance must be finite and positive."));
+        if (input.MaxIterations < 1)
+            issues.Add(ValidationIssue.Error("GLEM-1004", "max_iterations", "Max iterations must be positive."));
+        if (!Enum.IsDefined(input.Method))
+            issues.Add(ValidationIssue.Error("GLEM-1004", "method", "Unknown slope method."));
+        if (input.SearchRange is { } r &&
+            (new[] { r.CenterXMin, r.CenterXMax, r.CenterZMin, r.CenterZMax, r.RadiusMin, r.RadiusMax }.Any(v => !double.IsFinite(v)) ||
+             r.CenterXMin > r.CenterXMax || r.CenterZMin > r.CenterZMax || r.RadiusMin > r.RadiusMax || r.RadiusMin <= 0))
+            issues.Add(ValidationIssue.Error("GLEM-1004", "search_range", "Search range must be finite, ordered, with positive radii."));
 
         return issues;
     }
@@ -58,10 +72,17 @@ public static class AnalysisInputValidator
     {
         var issues = new List<ValidationIssue>();
 
-        if (input.LoadKpa <= 0.0)
+        if (!double.IsFinite(input.LoadKpa) || input.LoadKpa <= 0.0)
         {
             issues.Add(ValidationIssue.Error("GLEM-1007", "load_kpa", "Please specify the surcharge load as a value of 0 or greater"));
         }
+        foreach (var (field, value) in new[] { ("loaded_area_b", input.LoadedAreaB), ("loaded_area_l", input.LoadedAreaL), ("duration_years", input.DurationYears) })
+            if (!double.IsFinite(value) || value <= 0)
+                issues.Add(ValidationIssue.Error("GLEM-1004", field, $"{field} must be finite and positive."));
+        if (input.OutputPointCount < 1)
+            issues.Add(ValidationIssue.Error("GLEM-1004", "output_point_count", "Output point count must be positive."));
+        if (!Enum.IsDefined(input.DrainageMode))
+            issues.Add(ValidationIssue.Error("GLEM-1004", "drainage_mode", "Unknown drainage mode."));
 
         foreach (var layer in gm.Layers)
         {
@@ -74,5 +95,12 @@ public static class AnalysisInputValidator
         }
 
         return issues;
+    }
+
+    public static void ThrowIfErrors(IEnumerable<ValidationIssue> issues)
+    {
+        var errors = issues.Where(x => !x.IsWarning).ToList();
+        if (errors.Count > 0)
+            throw new EngineException("GLEM-2001", string.Join("; ", errors.Select(x => $"{x.FieldName}: {x.Message}")));
     }
 }

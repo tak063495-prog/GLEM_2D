@@ -644,4 +644,6 @@ Version {0}</value>
   <data name="Accessibility_SettlementPlot" xml:space="preserve"><value>Settlement versus time plot</value></data>
   <data name="Accessibility_SettlementPlotHelp" xml:space="preserve"><value>Total, immediate, primary, and secondary settlement curves use different line patterns.</value></data>
   <data name="Accessibility_SettlementResultTable" xml:space="preserve"><value>Settlement time-series result table</value></data>
+  <data name="Exception_GLEM2004" xml:space="preserve"><value>No finite converged slip surface with positive driving force was found. Flat symmetric ground has zero static driving. Check geometry, loading direction, and iteration settings.</value></data>
+  <data name="Exception_GLEM2005" xml:space="preserve"><value>Immediate settlement supports a homogeneous elastic half-space only. Use identical Es and Poisson ratio in all layers, or omit all Es values for consolidation-only analysis.</value></data>
 </root>

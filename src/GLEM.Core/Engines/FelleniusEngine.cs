@@ -8,6 +8,7 @@ public sealed class FelleniusEngine : ISlopeStabilityEngine
 
     public SlopeCalculation Compute(IReadOnlyList<SliceGeometry> slices, GroundModel gm, AnalysisConditions conditions)
     {
+        SlopeSafety.ValidateInputs(slices, gm, conditions);
         var resisting = 0.0;
         var driving = 0.0;
         var computations = new List<SliceComputation>(slices.Count);
@@ -27,14 +28,14 @@ public sealed class FelleniusEngine : ISlopeStabilityEngine
             computations.Add(new SliceComputation(s, u, np, cTerm, phiTerm));
         }
 
-        if (driving <= 0.0)
+        if (!double.IsFinite(driving) || driving <= 1e-12 * Math.Max(1, slices.Sum(s => Math.Abs(EffectiveWeight(s, conditions)))) || !double.IsFinite(resisting))
         {
             throw new EngineException("GLEM-2003", "The driving force is zero or less. The slip surface shape is inappropriate.");
         }
 
-        return new SlopeCalculation(resisting / driving, true, 1, computations);
+        return SlopeSafety.ValidateResult(new SlopeCalculation(resisting / driving, true, 1, computations));
     }
 
     internal static double EffectiveWeight(SliceGeometry s, AnalysisConditions conditions) =>
-        s.WKnPerM + conditions.SurchargeAt(s.XMid) * s.DeltaL;
+        s.WKnPerM + conditions.SurchargeAt(s.XMid) * s.HorizontalWidthM;
 }
