@@ -40,3 +40,7 @@ CIではランナーの一時ディレクトリへ記録し、`glem-performance-
 | 2026-08-23T06:03+09:00 | Windows 10.0.26200 / 12コア / .NET 8.0.30（開発機 RICO） | 7.79 | 0.012 | パス（基準内: <60s / <30s） |
 
 > 過去の基準記録はリポジトリ内の `perf-log.jsonl` を参照。新しい測定は明示的に記録モードを有効にした場合、またはCI artifactにだけ保存される。
+
+## 2026-10 review
+
+[性能比較の条件と結果](../RELEASE_NOTES_20261004_JA.md)。再現可能なBishop基準比較は `dotnet run --project tools/BishopBenchmarks -c Release`。

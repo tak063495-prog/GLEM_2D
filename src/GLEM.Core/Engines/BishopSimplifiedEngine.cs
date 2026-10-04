@@ -22,50 +22,61 @@ public sealed class BishopSimplifiedEngine : ISlopeStabilityEngine
         var fs = 1.0;
         var converged = false;
         var iterations = 0;
-        var computations = new List<SliceComputation>(slices.Count);
+        // These terms depend only on this call's geometry, soil, and loading, never on the iterated FS.
+        // Keep them local so changes to a GroundModel between calls cannot use stale material values.
+        var prepared = new PreparedSlice[slices.Count];
+        var denominator = 0.0;
+        var weightScale = 0.0;
+        var zeroStrength = true;
+        for (var i = 0; i < slices.Count; i++)
+        {
+            var s = slices[i];
+            var layer = gm.LayerAt(s.ZMid);
+            var u = StressCalculator.PoreWaterPressureKpa(gm, layer, s.ZMid);
+            var wEff = FelleniusEngine.EffectiveWeight(s, conditions);
+            var phiRad = layer.FrictionAngleDeg * Math.PI / 180.0;
+            var cosAlpha = Math.Cos(s.AlphaRad);
+            var tanPhi = Math.Tan(phiRad);
+            var cTerm = layer.CohesionKpa * s.HorizontalWidthM;
+            var phiRaw = (wEff * (1.0 + conditions.Kv) - u * s.HorizontalWidthM) * tanPhi;
+            var np = Math.Max(0.0, wEff * (1.0 + conditions.Kv) * cosAlpha - u * s.DeltaL);
+            prepared[i] = new(u, np, cTerm, phiRaw, cosAlpha, Math.Tan(s.AlphaRad), tanPhi);
+            denominator += wEff * (Math.Sin(s.AlphaRad) + conditions.Kh);
+            weightScale += Math.Abs(wEff);
+            zeroStrength &= layer.CohesionKpa == 0 && layer.FrictionAngleDeg == 0;
+        }
+        var reportFs = fs;
 
         for (iterations = 1; iterations <= _maxIterations; iterations++)
         {
             var numerator = 0.0;
-            var denominator = 0.0;
-            var pass = new List<SliceComputation>(slices.Count);
+            reportFs = fs; // The corrected baseline's report describes the last evaluated iterate.
 
-            foreach (var s in slices)
+            foreach (var p in prepared)
             {
-                var layer = gm.LayerAt(s.ZMid);
-                var u = StressCalculator.PoreWaterPressureKpa(gm, layer, s.ZMid);
-                var wEff = FelleniusEngine.EffectiveWeight(s, conditions);
-                var phiRad = layer.FrictionAngleDeg * Math.PI / 180.0;
-
-                var mAlpha = Math.Cos(s.AlphaRad) * (1.0 + Math.Tan(s.AlphaRad) * Math.Tan(phiRad) / fs);
+                var mAlpha = p.CosAlpha * (1.0 + p.TanAlpha * p.TanPhi / fs);
                 if (!double.IsFinite(mAlpha) || mAlpha <= 1e-9)
                 {
                     throw new EngineException("GLEM-2003", "The driving force is zero or less. The slip surface shape is inappropriate.");
                 }
-
-                var cTerm = layer.CohesionKpa * s.HorizontalWidthM;
-                var phiRaw = (wEff * (1.0 + conditions.Kv) - u * s.HorizontalWidthM) * Math.Tan(phiRad);
-                var np = Math.Max(0.0, wEff * (1.0 + conditions.Kv) * Math.Cos(s.AlphaRad) - u * s.DeltaL);
-
-                numerator += (cTerm + phiRaw) / mAlpha;
-                denominator += wEff * (Math.Sin(s.AlphaRad) + conditions.Kh);
-                pass.Add(new SliceComputation(s, u, np, cTerm / mAlpha, phiRaw / mAlpha));
+                numerator += (p.CTerm + p.PhiRaw) / mAlpha;
             }
 
-            if (!double.IsFinite(denominator) || denominator <= 1e-12 * Math.Max(1, slices.Sum(s => Math.Abs(FelleniusEngine.EffectiveWeight(s, conditions)))))
+            if (!double.IsFinite(denominator) || denominator <= 1e-12 * Math.Max(1, weightScale))
             {
                 throw new EngineException("GLEM-2003", "The driving force is zero or less. The slip surface shape is inappropriate.");
             }
 
             var fsNew = numerator / denominator;
-            computations = pass;
             if (!double.IsFinite(fsNew) || fsNew < 0)
                 throw new EngineException("GLEM-2003", "Bishop iteration produced a nonfinite or negative safety factor.");
             if (fsNew == 0)
             {
                 // Pure zero resistance has the exact finite solution FS=0; do not divide by it next pass.
-                if (slices.All(s => gm.LayerAt(s.ZMid).CohesionKpa == 0 && gm.LayerAt(s.ZMid).FrictionAngleDeg == 0))
-                    return new SlopeCalculation(0, true, iterations, computations);
+                if (zeroStrength)
+                {
+                    fs = 0; converged = true; break;
+                }
                 throw new EngineException("GLEM-2003", "Bishop iteration has zero effective resistance.");
             }
 
@@ -79,6 +90,16 @@ public sealed class BishopSimplifiedEngine : ISlopeStabilityEngine
             fs = fsNew;
         }
 
+        // Allocate the final report once, retaining exactly the baseline's last-iterate convention.
+        var computations = new List<SliceComputation>(slices.Count);
+        for (var i = 0; i < slices.Count; i++)
+        {
+            var p = prepared[i];
+            var mAlpha = p.CosAlpha * (1.0 + p.TanAlpha * p.TanPhi / reportFs);
+            computations.Add(new SliceComputation(slices[i], p.U, p.Np, p.CTerm / mAlpha, p.PhiRaw / mAlpha));
+        }
         return new SlopeCalculation(fs, converged, Math.Min(iterations, _maxIterations), computations);
     }
+
+    private readonly record struct PreparedSlice(double U, double Np, double CTerm, double PhiRaw, double CosAlpha, double TanAlpha, double TanPhi);
 }

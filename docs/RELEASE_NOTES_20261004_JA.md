@@ -38,3 +38,31 @@ Bishop純粘着・α30°・l2m・W100・c10: F=20/50=0.4。
 
 有限厚多層即時沈下、傾斜した地表の実装、完全なJanbu一般法、厳密な地震力平衡式は対象外。
 既存の擬似静的式の規約を維持しています。新解析手法・数値許容差緩和・未収束解採用による高速化はしません。
+
+## 性能変更（修正コミット6952478とは分離）
+
+Bishop内で層探索、水圧、重量、三角関数、c項/φ項を1回計算し、最後の条体帳票を1回だけ生成します。
+演算順序・許容差・上限を維持。帳票は基準実装と同じ「最後に評価したFs」で生成し、戻りFsへ置換しません。
+保持領域はCompute呼出し内に限定し、入力物性の変更後に古い値を再利用しません。
+層別・水位/ru・符号付きα・部分載荷の固定seed150ケース、非収束・ゼロ抵抗・駆動ゼロを含め、
+FS/Converged/Iterations/全SliceComputationと失敗コード・文言を厳密一致で比較しました。
+
+Triela / Windows 10.0.26300 / .NET runtime 8.0.31、Release、1 worker、
+DOTNET_TieredCompilation=0、tol=1e-10、maxIterations=200。100回warmup、9round交互順序、
+各roundでGCを実施し中央値を採用。ピークRSSではなくGC.GetAllocatedBytesForCurrentThreadの呼出し当たり割当量。
+初回値は別記録し、最初の3条体ケースにはJITを含みます。他サイズの初回値は同じメソッドが既にJIT済みです。
+速度はBishop.Compute単体の計測であり、探索全体や全ユーザー入力の速度保証ではありません。
+
+|条体数|修正後基準ms|性能版ms|定常速度比|基準割当bytes|性能版割当bytes|
+|---:|---:|---:|---:|---:|---:|
+|3|0.001804|0.000279|6.47x|3184|480|
+|100|0.046747|0.006149|7.60x|66368|12120|
+|1000|0.470353|0.060717|7.75x|649568|120120|
+
+再現: `DOTNET_TieredCompilation=0 dotnet run --project tools/BishopBenchmarks -c Release`（PowerShellでは環境変数を先に設定）。
+基準実装はtools/BishopBenchmarks/BishopBaselineEngine.csに固定し、最終結果は
+[bishop-review-20261004.json](perf/bishop-review-20261004.json)に保存しています。
+
+不変演算子と変化項を分ける考え方の参考: [Čermák/Sysala/Valdman](https://arxiv.org/abs/1805.04155)。
+この論文はFEMであり、Bishopの速度比を予測する根拠にはしていません。速度比は本コードの実測です。
+並列化、候補の丸めcache、例外API変更、Newton手法追加は精度・決定性の検証範囲が広いため見送り。
