@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
   <ItemGroup><ProjectReference Include="../../src/GLEM.Core/GLEM.Core.csproj" /></ItemGroup>
+  <ItemGroup>
+    <Compile Include="../../src/GLEM.Core/Engines/BishopIterationDomain.cs" Link="Correctness/BishopIterationDomain.cs" />
+    <Compile Include="../../src/GLEM.Core/Engines/SlopeSafety.cs" Link="Correctness/SlopeSafety.cs" />
+  </ItemGroup>
 </Project>

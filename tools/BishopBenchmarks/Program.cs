@@ -4,7 +4,7 @@ using GLEM.Core;
 using GLEM.Core.Engines;
 using GLEM.Core.Models;
 
-// The reference engine is the corrected pre-performance implementation at commit 6952478.
+// Reference retains per-iteration work/allocations, with the same domain and finite-value correctness fixes.
 // This harness deliberately compares every result field and failure/convergence state, without relaxed tolerances.
 var gm = new GroundModel { WaterTableDepthM = 10, Layers = { new SoilLayer { ThicknessM = 10, GammaKnm3 = 18, CohesionKpa = 5, FrictionAngleDeg = 20 } } };
 var conditions = new AnalysisConditions(10, null, null, .1, 0);
@@ -50,6 +50,13 @@ Compare(new BishopBaselineEngine(), new BishopSimplifiedEngine(), one, gm, condi
 var symmetric = new[] { one[0] with { AlphaRad=-.3 }, one[0] };
 Compare(new BishopBaselineEngine(), new BishopSimplifiedEngine(), symmetric, gm, new(0,null,null,0,0));
 var random = new Random(4242);
+var strong = new GroundModel { WaterTableDepthM=10, Layers={new SoilLayer {ThicknessM=10, GammaKnm3=18, CohesionKpa=100, FrictionAngleDeg=45}} };
+var signedCircle = SliceDiscretizer.DiscretizeCircle(0, -1, 6, strong, 1);
+var signedLoading=new AnalysisConditions(0,null,null,.1,0);
+Compare(new BishopBaselineEngine(1e-10), new BishopSimplifiedEngine(1e-10), signedCircle, strong, signedLoading);
+Compare(new BishopBaselineEngine(1e-14,1), new BishopSimplifiedEngine(1e-14,1), signedCircle, strong, signedLoading);
+var minimal = new[] {-Math.PI/3,0,Math.PI/3}.Select((a,i)=>new SliceGeometry(i+1,i,5,1,a,100)).ToArray();
+Compare(new BishopBaselineEngine(1e-10), new BishopSimplifiedEngine(1e-10), minimal, strong, signedLoading);
 for (var sample=0; sample<150; sample++)
 {
     var model = new GroundModel { WaterTableDepthM=sample % 11, Layers = {
@@ -63,7 +70,7 @@ for (var sample=0; sample<150; sample++)
 }
 Console.WriteLine(JsonSerializer.Serialize(new { runtime=Environment.Version.ToString(), os=Environment.OSVersion.ToString(),
     workers=1, tolerance=1e-10, max_iterations=200, tiered_compilation=Environment.GetEnvironmentVariable("DOTNET_TieredCompilation"),
-    cases=evidence, randomized_equivalence_cases=150, failure_and_nonconvergence_states_equal=true }, new JsonSerializerOptions { WriteIndented=true }));
+    cases=evidence, randomized_equivalence_cases=150, signed_pole_cases_equal=true, failure_and_nonconvergence_states_equal=true }, new JsonSerializerOptions { WriteIndented=true }));
 
 static double TimeOne(Func<SlopeCalculation> run) { var sw=Stopwatch.StartNew(); run(); sw.Stop(); return sw.Elapsed.TotalMilliseconds; }
 static void Compare(ISlopeStabilityEngine a, ISlopeStabilityEngine b, IReadOnlyList<SliceGeometry> slices, GroundModel gm, AnalysisConditions conditions)

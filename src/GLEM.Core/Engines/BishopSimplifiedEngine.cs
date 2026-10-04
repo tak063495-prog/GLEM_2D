@@ -19,6 +19,7 @@ public sealed class BishopSimplifiedEngine : ISlopeStabilityEngine
 
     public SlopeCalculation Compute(IReadOnlyList<SliceGeometry> slices, GroundModel gm, AnalysisConditions conditions)
     {
+        SlopeSafety.ValidateInputs(slices, gm, conditions);
         var fs = 1.0;
         var converged = false;
         var iterations = 0;
@@ -46,6 +47,8 @@ public sealed class BishopSimplifiedEngine : ISlopeStabilityEngine
             zeroStrength &= layer.CohesionKpa == 0 && layer.FrictionAngleDeg == 0;
         }
         var reportFs = fs;
+        if (!double.IsFinite(denominator) || denominator <= 1e-12 * Math.Max(1, weightScale))
+            throw new EngineException("GLEM-2003", "The driving force is zero or less. The slip surface shape is inappropriate.");
 
         for (iterations = 1; iterations <= _maxIterations; iterations++)
         {
@@ -55,9 +58,16 @@ public sealed class BishopSimplifiedEngine : ISlopeStabilityEngine
             foreach (var p in prepared)
             {
                 var mAlpha = p.CosAlpha * (1.0 + p.TanAlpha * p.TanPhi / fs);
-                if (!double.IsFinite(mAlpha) || mAlpha <= 1e-9)
+                if (!double.IsFinite(mAlpha))
                 {
                     throw new EngineException("GLEM-2003", "The driving force is zero or less. The slip surface shape is inappropriate.");
+                }
+                if (mAlpha <= 0)
+                {
+                    var root = BishopIterationDomain.Solve(prepared.Select(t =>
+                        new BishopTerm(t.CosAlpha, t.TanAlpha * t.TanPhi, t.CTerm + t.PhiRaw)).ToArray(),
+                        denominator, _convergenceTolerance, _maxIterations - iterations + 1);
+                    return BuildResult(root.Fs, root.Converged, iterations - 1 + root.Iterations, root.Fs);
                 }
                 numerator += (p.CTerm + p.PhiRaw) / mAlpha;
             }
@@ -90,15 +100,19 @@ public sealed class BishopSimplifiedEngine : ISlopeStabilityEngine
             fs = fsNew;
         }
 
-        // Allocate the final report once, retaining exactly the baseline's last-iterate convention.
-        var computations = new List<SliceComputation>(slices.Count);
-        for (var i = 0; i < slices.Count; i++)
+        return BuildResult(fs, converged, Math.Min(iterations, _maxIterations), reportFs);
+
+        SlopeCalculation BuildResult(double resultFs, bool resultConverged, int count, double evaluatedFs)
         {
-            var p = prepared[i];
-            var mAlpha = p.CosAlpha * (1.0 + p.TanAlpha * p.TanPhi / reportFs);
-            computations.Add(new SliceComputation(slices[i], p.U, p.Np, p.CTerm / mAlpha, p.PhiRaw / mAlpha));
+            var computations = new List<SliceComputation>(slices.Count);
+            for (var i = 0; i < slices.Count; i++)
+            {
+                var p = prepared[i];
+                var mAlpha = p.CosAlpha * (1.0 + p.TanAlpha * p.TanPhi / evaluatedFs);
+                computations.Add(new SliceComputation(slices[i], p.U, p.Np, p.CTerm / mAlpha, p.PhiRaw / mAlpha));
+            }
+            return SlopeSafety.ValidateResult(new SlopeCalculation(resultFs, resultConverged, count, computations));
         }
-        return new SlopeCalculation(fs, converged, Math.Min(iterations, _maxIterations), computations);
     }
 
     private readonly record struct PreparedSlice(double U, double Np, double CTerm, double PhiRaw, double CosAlpha, double TanAlpha, double TanPhi);

@@ -234,6 +234,20 @@ public sealed class UiViewModelTests : IDisposable
         vm.ActiveScreen.Should().Be(Screen.SettlementResult);
     }
 
+    [Fact]
+    public async Task JanbuDirectControlPoints_NonfiniteInputDoesNotPublishAResult()
+    {
+        var vm = new MainViewModel();
+        vm.SlopeAnalysis.Method = SlopeMethod.JanbuGeneralized;
+        vm.SlopeAnalysis.ControlPoints.Add(new ControlPointRow { X=double.NaN, Z=1 });
+        vm.SlopeAnalysis.ControlPoints.Add(new ControlPointRow { X=0, Z=2 });
+        vm.SlopeAnalysis.ControlPoints.Add(new ControlPointRow { X=1, Z=3 });
+        vm.SlopeAnalysis.ControlPoints.Add(new ControlPointRow { X=2, Z=4 });
+        await ((IAsyncRelayCommand)vm.SlopeAnalysis.RunCommand).ExecuteAsync(null);
+        vm.SlopeAnalysis.Result.Should().BeNull();
+        vm.SlopeAnalysis.RunError.Should().NotBeNullOrWhiteSpace();
+    }
+
     public void Dispose()
     {
         // no shared state to clean up beyond the autosave file handled per test

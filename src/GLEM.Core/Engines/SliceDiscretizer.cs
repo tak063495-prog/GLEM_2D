@@ -6,6 +6,7 @@ public static class SliceDiscretizer
 {
     public static List<SliceGeometry> DiscretizeCircle(double cx, double cz, double radius, GroundModel gm, double sliceWidthM)
     {
+        SlopeSafety.ValidateGround(gm);
         if (!double.IsFinite(cx) || !double.IsFinite(cz) || !double.IsFinite(radius) || radius <= 0 ||
             !double.IsFinite(sliceWidthM) || sliceWidthM <= 0 || cz >= 0 || cz + radius > gm.TotalThicknessM)
             throw new EngineException("GLEM-2002", "Circle must define a finite, single-valued base inside the ground.");
@@ -17,7 +18,7 @@ public static class SliceDiscretizer
 
         var (tMin, tMax) = thetaRange.Value;
         var arcLength = radius * (tMax - tMin);
-        var n = Math.Max(1, (int)Math.Ceiling(arcLength / sliceWidthM));
+        var n = SliceCount(arcLength, sliceWidthM);
         var dTheta = (tMax - tMin) / n;
 
         var slices = new List<SliceGeometry>();
@@ -56,6 +57,7 @@ public static class SliceDiscretizer
     // 非円滑動面（制御点列、M-3）の条体離散化。地表は z=0 の水平線と仮定する。
     public static List<SliceGeometry> DiscretizeFunction(FunctionSurface fs, GroundModel gm, double sliceWidthM)
     {
+        SlopeSafety.ValidateGround(gm);
         if (!double.IsFinite(sliceWidthM) || sliceWidthM <= 0)
             throw new EngineException("GLEM-2002", "slice_width_m must be finite and positive.");
         var pts = fs.ControlPoints.OrderBy(p => p.X).ToList();
@@ -65,6 +67,10 @@ public static class SliceDiscretizer
         }
 
         var slices = new List<SliceGeometry>();
+        for (var i = 0; i < pts.Count; i++)
+            if (!double.IsFinite(pts[i].X) || !double.IsFinite(pts[i].Z) || pts[i].Z < 0 || pts[i].Z > gm.TotalThicknessM ||
+                (i > 0 && pts[i].X <= pts[i - 1].X))
+                throw new EngineException("GLEM-2002", "Control points must have finite distinct X coordinates and depths inside the ground.");
         for (var i = 0; i < pts.Count - 1; i++)
         {
             var x0 = pts[i].X;
@@ -78,7 +84,7 @@ public static class SliceDiscretizer
                 continue;
             }
 
-            var n = Math.Max(1, (int)Math.Ceiling(segLen / sliceWidthM));
+            var n = SliceCount(segLen, sliceWidthM);
             for (var k = 0; k < n; k++)
             {
                 var t0 = k / (double)n;
@@ -104,7 +110,6 @@ public static class SliceDiscretizer
                 }
 
                 var alpha = Math.Atan2(z1 - z0, x1 - x0);
-                alpha = Math.Clamp(alpha, -Math.PI / 2 + 0.017, Math.PI / 2 - 0.017); // ±89 deg
 
                 var width = xm1 - xm0;
                 var w = IntegratedWeight(gm, width, zm0, zm1);
@@ -119,6 +124,14 @@ public static class SliceDiscretizer
         }
 
         return slices;
+    }
+
+    private static int SliceCount(double length, double width)
+    {
+        var count = Math.Ceiling(length / width);
+        if (!double.IsFinite(count) || count > int.MaxValue || count < 1)
+            throw new EngineException("GLEM-2002", "Slice count must be finite and representable; check coordinates and slice width.");
+        return (int)count;
     }
 
     public static double BaseInclination(double theta)

@@ -106,6 +106,79 @@ public sealed class ReviewRegressionTests
     }
 
     [Fact]
+    public void BishopHighFrictionSignedCircle_ConvergesToIndependentEquilibriumRoot()
+    {
+        var gm = Ground(Layer()); gm.WaterTableDepthM = 10;
+        gm.Layers[0].CohesionKpa = 100; gm.Layers[0].FrictionAngleDeg = 45;
+        var slices = SliceDiscretizer.DiscretizeCircle(0, -1, 6, gm, 1);
+        var loading = new AnalysisConditions(0, null, null, .1, 0);
+        var driving = slices.Sum(s => s.WKnPerM * (Math.Sin(s.AlphaRad) + .1));
+        var pole = slices.Max(s => -Math.Tan(s.AlphaRad));
+        Assert.True(pole > 1); // FS=1 lies outside the positive m-alpha domain.
+        double Residual(double f) => slices.Sum(s =>
+            (100 * s.HorizontalWidthM + s.WKnPerM) /
+            (Math.Cos(s.AlphaRad) * (f + Math.Tan(s.AlphaRad)))) - driving;
+        // This function is strictly decreasing: every dry slice's resistance is positive.
+        var lo = pole + 1e-6; var hi = 100.0;
+        Assert.True(Residual(lo) > 0); Assert.True(Residual(hi) < 0);
+        for (var i = 0; i < 100; i++) { var mid = (lo + hi) / 2; if (Residual(mid) > 0) lo = mid; else hi = mid; }
+        var reference = (lo + hi) / 2;
+        var result = new BishopSimplifiedEngine(1e-10, 200).Compute(slices, gm, loading);
+        Assert.True(result.Converged);
+        Assert.InRange(Math.Abs(result.Fs - reference), 0, 1e-8);
+        Assert.InRange(Math.Abs(Residual(result.Fs)), 0, 1e-7);
+        Assert.All(slices, s => Assert.True(Math.Cos(s.AlphaRad) * (1 + Math.Tan(s.AlphaRad) / result.Fs) > 0));
+        var searched = new SlipSurfaceSearcher().Search(gm, new() { Method=SlopeMethod.BishopSimplified,
+            Kh=.1, SliceWidthM=1, ConvergenceTolerance=1e-10, SearchRange=new(0,0,-1,-1,6,6) });
+        Assert.True(searched.Converged); Assert.Equal(reference, searched.MinFs, 8);
+    }
+
+    [Fact]
+    public void BishopSignedThreeSlices_MatchesIndependentScalarRootAndHonorsIterationLimit()
+    {
+        var gm=Ground(Layer()); gm.WaterTableDepthM=10; gm.Layers[0].CohesionKpa=100; gm.Layers[0].FrictionAngleDeg=45;
+        var slices=new[] {-Math.PI/3,0,Math.PI/3}.Select((a,i)=>new SliceGeometry(i+1,i,5,1,a,100)).ToArray();
+        double R(double f) => 600/(1-3/(f*f))+200-30*f;
+        var lo=26.0; var hi=27.0; Assert.True(R(lo)>0); Assert.True(R(hi)<0);
+        for(var i=0;i<100;i++){var mid=(lo+hi)/2; if(R(mid)>0)lo=mid;else hi=mid;}
+        var calc=new BishopSimplifiedEngine(1e-10).Compute(slices,gm,new(0,null,null,.1,0));
+        Assert.True(calc.Converged); Assert.Equal((lo+hi)/2,calc.Fs,8);
+        Assert.InRange(Math.Abs(R(calc.Fs)),0,1e-7);
+        var limited=new BishopSimplifiedEngine(1e-14,1).Compute(slices,gm,new(0,null,null,.1,0));
+        Assert.False(limited.Converged); Assert.Equal(1,limited.Iterations); Assert.True(double.IsFinite(limited.Fs));
+    }
+
+    [Fact]
+    public void FunctionSurfaceRejectsNonfiniteDuplicateOrOutOfGroundControlPoints()
+    {
+        var gm=Ground(Layer());
+        foreach(var points in new[] {
+            new (double,double)[]{(double.NaN,1),(0,2),(1,3),(2,4)},
+            new (double,double)[]{(0,1),(1,2),(1,3),(2,4)},
+            new (double,double)[]{(0,-1),(1,2),(2,3)},
+            new (double,double)[]{(0,1),(1,2),(2,11)},
+            new (double,double)[]{(0,1),(1,double.PositiveInfinity),(2,3)},
+            new (double,double)[]{(-1e308,1),(1e308,2)} })
+            Assert.Throws<EngineException>(()=>SliceDiscretizer.DiscretizeFunction(new(points),gm,1));
+    }
+
+    [Fact]
+    public void SlopeCoreRejectsNonfiniteGeometryLoadingAndOverflowReports()
+    {
+        var gm=Ground(Layer()); gm.WaterTableDepthM=10;
+        var s=new SliceGeometry(1,0,5,1,.3,100);
+        foreach(var engine in new ISlopeStabilityEngine[]{new FelleniusEngine(),new BishopSimplifiedEngine(),new JanbuGeneralizedEngine()})
+        {
+            foreach(var bad in new[]{s with{XMid=double.NaN},s with{ZMid=double.NaN},s with{AlphaRad=double.NaN},
+                s with{DeltaL=double.PositiveInfinity},s with{HorizontalWidthM=double.NaN},s with{WKnPerM=double.NaN}})
+                Assert.Throws<EngineException>(()=>engine.Compute(new[]{bad},gm,new(0,null,null,.1,0)));
+            Assert.Throws<EngineException>(()=>engine.Compute(new[]{s},gm,new(0,null,null,double.NaN,0)));
+            Assert.Throws<EngineException>(()=>engine.Compute(new[]{s with{DeltaL=1e308,HorizontalWidthM=1e308}},gm,new(0,null,null,.1,0)));
+        }
+        Assert.Throws<EngineException>(()=>new JanbuGeneralizedEngine().Compute(new[]{s with{AlphaRad=-.3},s},gm,new(0,null,null,1e-15,0)));
+    }
+
+    [Fact]
     public void SearchRejectsAllUnconvergedCandidates()
     {
         var gm = Ground(Layer());
