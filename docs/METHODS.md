@@ -35,7 +35,7 @@ FS = Σ{[c' b + (W*(1 + kv) - u b) tan φ'] / mα}
      / Σ[W* (sin α + kh)]
 ```
 
-The initial value is `FS = 1.0`; the default convergence tolerance is `0.001` with at most 200 iterations. The result reports whether convergence occurred. The method is intended for circular slip surfaces and neglects interslice shear forces.
+Fixed-point iteration starts at `FS = 1.0`. If an iterate lies outside `mα > 0`, it switches to a bracketed scalar equilibrium solve above the largest negative-angle pole. Bracket expansion and bisection share the remaining iteration budget; exhausting it returns `Converged=false`. The default FS convergence tolerance is `0.001` with at most 200 iterations. The method is intended for circular slip surfaces and neglects interslice shear forces.
 
 ## GLEM Janbu approximation
 
@@ -129,3 +129,14 @@ Reference for horizontal width/base length distinction: USACE EM 1110-2-1902,
 Figures F-17/G-11, [manual](https://www.publications.usace.army.mil/Portals/76/Publications/EngineerManuals/EM_1110-2-1902.pdf).
 The existing pseudo-static formula and GLEM-specific Janbu approximation are preserved;
 full force-equilibrium seismic theory and sloping-ground geometry are outside this revision.
+
+The signed three-slice dry reference has ΔL=1, W=100, α=(-60°,0°,60°),
+c=100, φ=45°, kh=.1 and gives `600/(1-3/F²)+200-30F=0` on F>sqrt(3).
+Independent bisection on [26,27] gives F=26.750864342576584.
+For cx=0, cz=-1, r=6, γ=18 and arc subdivision width=1, the 17-slice chord geometry
+gives F=33.280056023023604. Both used to be rejected at initial FS=1 despite positive roots.
+The bracket equation is Σ A/[cosα (F+tanα tanφ)] - D=0; for positive dry A it is strictly
+decreasing above all poles. Mixed negative resistance is not assigned an unverified root when no bracket exists.
+Core engines reject nonfinite geometry/loading/material values and nonfinite FS/report fields.
+Control-point surfaces require distinct finite X and finite depths in [0,H]; unsupported out-of-ground
+segments are rejected rather than clipped. True base inclination replaces the old ±89° clamp.

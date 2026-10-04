@@ -31,8 +31,8 @@ Bishop純粘着・α30°・l2m・W100・c10: F=20/50=0.4。
 ## 検証
 
 初期新規10テストは修正前9失敗、修正後10PASS。
-修正・性能変更後のRelease build PASS、全123テストPASS（skip 0）。
-GLEM.Core coverage 93.19%（1109/1190、gate≥80%）で既存coverage gateもPASS。
+修正・性能変更後のRelease build PASS、全128テストPASS（skip 0）。
+GLEM.Core coverage 93.05%（1179/1267、gate≥80%）で既存coverage gateもPASS。
 既存リリース自己診断C01–C03は、アプリ起動時のユーザー領域書込みを避けてテストから呼び出しPASS。
 GitHub上の既存CI結果はドラフトPRのChecksで確認できます。手動GUI操作・署名付き配布公開はNOT_RUN。
 
@@ -55,11 +55,11 @@ DOTNET_TieredCompilation=0、tol=1e-10、maxIterations=200。100回warmup、9rou
 初回値は別記録し、最初の3条体ケースにはJITを含みます。他サイズの初回値は同じメソッドが既にJIT済みです。
 速度はBishop.Compute単体の計測であり、探索全体や全ユーザー入力の速度保証ではありません。
 
-|条体数|修正後基準ms|性能版ms|定常速度比|基準割当bytes|性能版割当bytes|
+|条体数|修正後基準ms|性能版ms|通常速度比|基準割当bytes|性能版割当bytes|
 |---:|---:|---:|---:|---:|---:|
-|3|0.001804|0.000279|6.47x|3184|480|
-|100|0.046747|0.006149|7.60x|66368|12120|
-|1000|0.470353|0.060717|7.75x|649568|120120|
+|3|0.002317|0.000587|3.95x|3528|800|
+|100|0.053266|0.010884|4.89x|70592|16320|
+|1000|0.522483|0.106217|4.92x|689792|160320|
 
 再現: `DOTNET_TieredCompilation=0 dotnet run --project tools/BishopBenchmarks -c Release`（PowerShellでは環境変数を先に設定）。
 基準実装はtools/BishopBenchmarks/BishopBaselineEngine.csに固定し、最終結果は
@@ -68,3 +68,22 @@ DOTNET_TieredCompilation=0、tol=1e-10、maxIterations=200。100回warmup、9rou
 不変演算子と変化項を分ける考え方の参考: [Čermák/Sysala/Valdman](https://arxiv.org/abs/1805.04155)。
 この論文はFEMであり、Bishopの速度比を予測する根拠にはしていません。速度比は本コードの実測です。
 並列化、候補の丸めcache、例外API変更、Newton手法追加は精度・決定性の検証範囲が広いため見送り。
+
+## 追加レビューの修正・再検証
+
+- Bishop初期FS=1が負角のmα>0領域外にあるだけで、有効円弧を除外する問題を再現。
+  領域外の反復値に限り、最大の極より右側で釣合い式をbracketし二分法へfallback。
+  bracket拡大と二分法は残りのmax_iterationsを共有し、上限時はConverged=false。
+  正のbracketが確認できない場合は未検証の根を採用しません。通常の固定点経路は維持。
+- 独立3条体式 R(F)=600/(1-3/F²)+200-30F、F>sqrt(3)、[26,27]の二分法参照
+  F=26.750864342576584。乾燥c100/φ45、cx0/cz−1/r6、γ18、17条体円弧は
+  F=33.280056023023604。両者が収束し、実円弧が探索でも採用される回帰を追加。
+- 旧コードを実行し、非有限Xの制御点から5条体を生成しJanbuがFS=NaN、Converged=trueを
+  返す経路を再現。全3エンジンのCore入口で材料・載荷・条体の有限性を確認し、
+  出口でもFSと全条体報告を確認。Janbuにもスケール付き駆動力ゼロ判定を追加。
+- 制御点の非有限座標・重複X・地盤外深度・表現不能な分割数を拒否。実際の傾斜角を保持。
+  直接Janbu UI経路も、不正入力から結果を公開しない回帰を追加。
+- Release buildは警告0・エラー0、全128試験PASS・skip0、Core coverage 93.05%でgate PASS。
+- 性能基準にも有限性とBishop領域修正を適用し、共有する正しさコードはcsprojでリンク。
+  固定seed150例・符号付き円弧/3条体・1反復打切りを含め、全報告・収束・失敗状態が完全一致。
+  上表・生データは再計測値へ更新しました。旧6.47〜7.75倍という測定値は新headの値ではありません。
